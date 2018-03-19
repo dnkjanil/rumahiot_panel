@@ -55,7 +55,7 @@
         </v-list>
       </v-navigation-drawer>
       <!--Toolbar-->
-      <v-toolbar color="white" fixed app>
+      <v-toolbar dense color="white" fixed app>
         <v-toolbar-side-icon @click.stop="mainDrawer = !mainDrawer">
           <v-icon color="grey">menu</v-icon>
         </v-toolbar-side-icon>
@@ -155,7 +155,7 @@
         mainDrawer: false,
         items: [
           { icon: 'fa-tachometer-alt', text: 'Dashboard', routeName: 'PanelRoot' },
-          { icon: 'fa-microchip', text: 'My Device', routeName: 'PanelRoot' },
+          { icon: 'fa-microchip', text: 'My Devices', routeName: 'UserDevices' },
           { icon: 'fa-file-excel', text: 'Device Data', routeName: 'PanelRoot' },
           { icon: 'fa-address-card', text: 'My Profile', routeName: 'Profile' },
           { icon: 'fa-list-ul', text: 'Account Logs', routeName: 'PanelRoot' }

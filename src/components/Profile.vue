@@ -1,8 +1,7 @@
 <template>
   <v-layout justify-space-around wrap>
-    <v-flex xs12 md3 mt-3 >
+    <v-flex xs12 md3 mt-3>
       <v-card>
-        <div>
           <!--Profile tab-->
           <v-tabs icons-and-text centered dark color="blue">
             <v-tabs-slider color="yellow"></v-tabs-slider>
@@ -25,13 +24,13 @@
                 <v-container>
                 <!--Profile Image-->
                   <v-layout row wrap>
-                    <v-flex xs6>
+                    <v-flex xs6 mr-3>
                       <v-avatar
                         tile="false"
                         :size="150"
                         class="grey lighten-4"
                       >
-                        <img src="https://s3-ap-southeast-1.amazonaws.com/rumahiot-upload/image/profile/5083b3ed6d4341ff9d9a6f4f649f1f31/42bbacdade4c4f7887fbf8ada2e29aeb.png" alt="avatar">
+                        <img :src="userProfileImage" alt="avatar">
                       </v-avatar>
                     </v-flex>
                     <v-flex xs3>
@@ -153,14 +152,13 @@
               </v-card>
             </v-tab-item>
           </v-tabs>
-        </div>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 <script>
-  import {CHANGE_PASSWORD_REQUEST, AUTH_SIGNOUT} from '../store/actions/sidik'
-  import {USER_PROFILE_REQUEST, USER_PROFILE_UPDATE_REQUEST} from '../store/actions/lemari'
+  import {CHANGE_PASSWORD_REQUEST} from '../store/actions/sidik'
+  import {USER_PROFILE_UPDATE_REQUEST} from '../store/actions/lemari'
 
   export default {
     data () {
@@ -169,6 +167,7 @@
         userEmail: '',
         userFullName: '',
         userPhoneNumber: '',
+        userProfileImage: '',
         changePasswordFormValid: false,
         updateProfileFormValid: false,
         oldPassword: '',
@@ -229,25 +228,29 @@
       }
     },
     mounted: async function () {
-      try {
-        this.$store.dispatch(USER_PROFILE_REQUEST)
-          .then((resp) => {
-            // TODO: Take this from state instead
-            // Put profil data in the form
-            this.userFullName = resp.data.data.full_name
-            this.userEmail = resp.data.data.email
-            this.userPhoneNumber = resp.data.data.phone_number
-          })
-          .catch(() => {
-            this.$store.dispatch(AUTH_SIGNOUT)
-              .then(() => {
-                this.$router.push('/signin')
-              })
-          })
-      } catch (error) {
-        // Display client error
-        console.error(error)
-      }
+      this.userEmail = this.$store.getters.getProfile.email
+      this.userFullName = this.$store.getters.getProfile.full_name
+      this.userPhoneNumber = this.$store.getters.getProfile.phone_number
+      this.userProfileImage = this.$store.getters.getProfile.profile_image
+      // try {
+      //   this.$store.dispatch(USER_PROFILE_REQUEST)
+      //     .then((resp) => {
+      //       // TODO: Take this from state instead
+      //       // Put profil data in the form
+      //       this.userFullName = resp.data.data.full_name
+      //       this.userEmail = resp.data.data.email
+      //       this.userPhoneNumber = resp.data.data.phone_number
+      //     })
+      //     .catch(() => {
+      //       this.$store.dispatch(AUTH_SIGNOUT)
+      //         .then(() => {
+      //           this.$router.push('/signin')
+      //         })
+      //     })
+      // } catch (error) {
+      //   // Display client error
+      //   console.error(error)
+      // }
     }
   }
 </script>

@@ -17,8 +17,8 @@ const state = {
 }
 
 const getters = {
-  getProfile: state => state.user_profile,
-  isProfileLoaded: state => !!state.user_profile
+  getProfile: state => state.userProfile,
+  isProfileLoaded: state => !!state.status
 }
 
 const actions = {
