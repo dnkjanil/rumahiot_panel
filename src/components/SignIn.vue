@@ -7,7 +7,7 @@
           </v-card-media>
           <v-card-title primary-title>
             <div>
-              <img src="/static/img/logos/banner-toolbar.png" width="100" />
+              <img src="/static/img/logos/banner-toolbar.png" width="100"/>
               <br/>
               <h3 class="headline mb-0">Sign in</h3>
               <div>Using your RumahIoT Credential</div>
@@ -37,7 +37,8 @@
                 <a class="body-1">Forgot your password ?</a>
                 <br/>
               </div>
-              <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in</v-btn>
+              <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in
+              </v-btn>
             </v-form>
 
             <v-snackbar
@@ -93,7 +94,7 @@
           console.error(error)
         }
       },
-      generateSnack (message, color) {
+      generateSnack: function (message, color) {
         this.signinSnackMessage = message
         this.signinSnackColor = color
         this.signinSnack = true

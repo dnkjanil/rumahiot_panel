@@ -9,11 +9,10 @@
 </template>
 
 <script>
-export default {
-  data () {
-    return {
-    }
-  },
-  name: 'App'
-}
+  export default {
+    data () {
+      return {}
+    },
+    name: 'App'
+  }
 </script>

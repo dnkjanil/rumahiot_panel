@@ -6,7 +6,8 @@ import {
   AUTH_SIGNOUT,
   CHANGE_PASSWORD_REQUEST,
   CHANGE_PASSWORD_SUCCESS,
-  CHANGE_PASSWORD_ERROR}
+  CHANGE_PASSWORD_ERROR
+}
   from '../actions/sidik'
 
 import axios from 'axios/index'
