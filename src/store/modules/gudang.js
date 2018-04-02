@@ -43,7 +43,7 @@ const actions = {
   [UPDATE_USER_SENSOR_DETAIL_REQUEST]: ({commit, dispatch}, newSensorDetail) => {
     return new Promise((resolve, reject) => {
       commit(UPDATE_USER_SENSOR_DETAIL_REQUEST)
-      const updateUserSensorDetailEndpoint = 'http://localhost:8000/configure/device/sensor/detail/update'
+      const updateUserSensorDetailEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/device/sensor/detail/update'
       const fd = new FormData()
       fd.append('new_threshold', newSensorDetail.userSensorThreshold)
       fd.append('threshold_enabled', newSensorDetail.userSensorThresholdEnabled)

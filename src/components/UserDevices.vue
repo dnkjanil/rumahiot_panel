@@ -86,110 +86,171 @@
                           <!--If the threshold is enabled-->
                             <template v-if="sensorDetail.threshold_enabled">
                               <template v-if="sensorDetail.threshold_direction == '1'">
-                                  <v-card v-if="sensorDetail.latest_value > sensorDetail.sensor_threshold"  color="grey lighten-4">
+                                  <v-card hover v-if="sensorDetail.latest_value > sensorDetail.sensor_threshold"  color="grey lighten-4">
                                     <v-card-title primary-title>
                                       <div>
                                         <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
-                                        <h3 class="body-2 mb-0">Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}</h3>
-                                        <h3 class="body-2 mb-0 ">Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}</h3>
-                                        <h3 class="body-2 mb-0 ">Threshold Direction : {{sensorDetail.threshold_direction}}</h3>
+                                        <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>autorenew</v-icon>
+                                          Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
+                                        </h3>
+                                        <h3 class="body-2 mb-0 ">
+                                          <v-icon color="primary" right>alarm_on</v-icon>
+                                          Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}
+                                        </h3>
                                       </div>
                                     </v-card-title>
                                     <v-card-actions>
                                       <v-spacer></v-spacer>
-                                      <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                        <v-icon color="pink">edit</v-icon>
-                                      </v-btn>
+                                      <!--Threshold direction symbol-->
+                                      <v-tooltip bottom v-if="sensorDetail.threshold_direction == '1'">
+                                        <v-icon dark color="primary" slot="activator">vertical_align_top</v-icon>
+                                        <span>{{deviceListTooltip.aboveThreshold}}</span>
+                                      </v-tooltip>
+                                      <v-tooltip bottom v-else-if="sensorDetail.threshold_direction == '-1'">
+                                        <v-icon dark color="primary" slot="activator">vertical_align_bottom</v-icon>
+                                        <span>{{deviceListTooltip.belowThreshold}}</span>
+                                      </v-tooltip>
                                       <v-tooltip bottom>
                                         <v-icon dark color="orange" slot="activator">warning</v-icon>
                                         <span>{{deviceListTooltip.warning}}</span>
                                       </v-tooltip>
+                                      <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
+                                        <v-icon color="pink">edit</v-icon>
+                                      </v-btn>
                                     </v-card-actions>
                                   </v-card>
-                                  <v-card v-else color="grey lighten-4">
+                                  <v-card hover v-else color="grey lighten-4">
                                     <v-card-title primary-title>
                                       <div>
                                         <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
-                                        <h3 class="body-2 mb-0">Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}</h3>
-                                        <h3 class="body-2 mb-0 ">Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}</h3>
-                                        <h3 class="body-2 mb-0 ">Threshold Direction : {{sensorDetail.threshold_direction}}</h3>
+                                        <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>autorenew</v-icon>
+                                          Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
+                                        </h3>
+                                        <h3 class="body-2 mb-0 ">
+                                          <v-icon color="primary" right>alarm_on</v-icon>
+                                          Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}
+                                        </h3>
                                       </div>
                                     </v-card-title>
                                     <v-card-actions>
                                       <v-spacer></v-spacer>
-                                      <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                        <v-icon color="pink">edit</v-icon>
-                                      </v-btn>
+                                      <!--Threshold direction symbol-->
+                                      <v-tooltip bottom v-if="sensorDetail.threshold_direction == '1'">
+                                        <v-icon dark color="primary" slot="activator">vertical_align_top</v-icon>
+                                        <span>{{deviceListTooltip.aboveThreshold}}</span>
+                                      </v-tooltip>
+                                      <v-tooltip bottom v-else-if="sensorDetail.threshold_direction == '-1'">
+                                        <v-icon dark color="primary" slot="activator">vertical_align_bottom</v-icon>
+                                        <span>{{deviceListTooltip.belowThreshold}}</span>
+                                      </v-tooltip>
                                       <v-tooltip bottom>
                                         <v-icon dark color="green" slot="activator">check_circle</v-icon>
                                         <span>{{deviceListTooltip.normal}}</span>
                                       </v-tooltip>
+                                      <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
+                                        <v-icon color="pink">edit</v-icon>
+                                      </v-btn>
                                     </v-card-actions>
                                   </v-card>
                               </template>
                               <template v-else-if="sensorDetail.threshold_direction == '-1'">
-                                <v-card v-if="sensorDetail.latest_value < sensorDetail.sensor_threshold"  color="grey lighten-4">
+                                <v-card hover v-if="sensorDetail.latest_value < sensorDetail.sensor_threshold"  color="grey lighten-4">
                                   <v-card-title primary-title>
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
-                                      <h3 class="body-2 mb-0">Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Direction : {{sensorDetail.threshold_direction}}</h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>autorenew</v-icon>
+                                        Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0 ">
+                                        <v-icon color="primary" right>alarm_on</v-icon>
+                                        Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}
+                                      </h3>
                                     </div>
                                   </v-card-title>
                                   <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
-                                    </v-btn>
+                                    <!--Threshold direction symbol-->
+                                    <v-tooltip bottom v-if="sensorDetail.threshold_direction == '1'">
+                                      <v-icon dark color="primary" slot="activator">vertical_align_top</v-icon>
+                                      <span>{{deviceListTooltip.aboveThreshold}}</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom v-else-if="sensorDetail.threshold_direction == '-1'">
+                                      <v-icon dark color="primary" slot="activator">vertical_align_bottom</v-icon>
+                                      <span>{{deviceListTooltip.belowThreshold}}</span>
+                                    </v-tooltip>
+
                                     <v-tooltip bottom>
                                       <v-icon dark color="orange" slot="activator">warning</v-icon>
                                       <span>{{deviceListTooltip.warning}}</span>
                                     </v-tooltip>
+                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
+                                      <v-icon color="pink">edit</v-icon>
+                                    </v-btn>
                                   </v-card-actions>
                                 </v-card>
-                                <v-card v-else color="grey lighten-4">
+                                <v-card  hover v-else color="grey lighten-4">
                                   <v-card-title primary-title>
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
-                                      <h3 class="body-2 mb-0">Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Direction : {{sensorDetail.threshold_direction}}</h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>autorenew</v-icon>
+                                        Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0 ">
+                                        <v-icon color="primary" right>alarm_on</v-icon>
+                                        Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}
+                                      </h3>
                                     </div>
                                   </v-card-title>
                                   <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
-                                    </v-btn>
+                                    <!--Threshold direction symbol-->
+                                    <v-tooltip bottom v-if="sensorDetail.threshold_direction == '1'">
+                                      <v-icon dark color="primary" slot="activator">vertical_align_top</v-icon>
+                                      <span>{{deviceListTooltip.aboveThreshold}}</span>
+                                    </v-tooltip>
+                                    <v-tooltip bottom v-else-if="sensorDetail.threshold_direction == '-1'">
+                                      <v-icon dark color="primary" slot="activator">vertical_align_bottom</v-icon>
+                                      <span>{{deviceListTooltip.belowThreshold}}</span>
+                                    </v-tooltip>
+
                                     <v-tooltip bottom>
                                       <v-icon dark color="green" slot="activator">check_circle</v-icon>
                                       <span>{{deviceListTooltip.normal}}</span>
                                     </v-tooltip>
+                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
+                                      <v-icon color="pink">edit</v-icon>
+                                    </v-btn>
                                   </v-card-actions>
                                 </v-card>
                               </template>
                             </template>
                             <!--If the threshold not enabled-->
                             <template v-else-if="!sensorDetail.threshold_enabled">
-                                <v-card color="grey lighten-4">
-                                  <v-card-title primary-title>
+                                <v-card color="grey lighten-4"
+                                        hover
+                                >
+                                  <v-card-title primary-title >
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
-                                      <h3 class="body-2 mb-0">Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Value : {{sensorDetail.sensor_threshold}}{{sensorDetail.unit_symbol}}</h3>
-                                      <h3 class="body-2 mb-0 ">Threshold Direction : {{sensorDetail.threshold_direction}}</h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>autorenew</v-icon>
+                                        Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
+                                      </h3>
                                     </div>
                                   </v-card-title>
                                   <v-card-actions>
                                     <v-spacer></v-spacer>
-                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
-                                    </v-btn>
                                     <v-tooltip bottom>
                                       <v-icon dark color="primary" slot="activator">info</v-icon>
                                       <span>{{deviceListTooltip.disabled}}</span>
                                     </v-tooltip>
+                                    <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
+                                      <v-icon color="pink">edit</v-icon>
+                                    </v-btn>
                                   </v-card-actions>
                                 </v-card>
                             </template>
@@ -459,7 +520,9 @@
         deviceListTooltip: {
           warning: 'Latest value goes over threshold',
           normal: 'Latest value is normal',
-          disabled: 'Threshold is disabled'
+          disabled: 'Threshold is disabled',
+          aboveThreshold: 'You will be notified when the sensor value is above the threshold set',
+          belowThreshold: 'You will be notified when the sensor value is below the threshold set'
         },
         editSensorDialog: false,
         editedSensor: {
