@@ -4,11 +4,13 @@ import {
   USER_PROFILE_ERROR,
   USER_PROFILE_UPDATE_REQUEST,
   USER_PROFILE_UPDATE_SUCCESS,
-  USER_PROFILE_UPDATE_ERROR
+  USER_PROFILE_UPDATE_ERROR,
+  USER_PROFILE_FULL_NAME_UPDATE,
+  USER_PROFILE_PHONE_NUMBER_UPDATE
+
 } from '../actions/lemari'
 import {AUTH_SIGNOUT} from '../actions/sidik'
 import axios from 'axios/index'
-import Vue from 'vue'
 
 const state = {
   'status': '',
@@ -33,8 +35,6 @@ const actions = {
         })
         .catch(err => {
           commit(USER_PROFILE_ERROR)
-          // TODO : MOVE THE DISPATCHER INTO AXIOS INTERCEPTOR
-          dispatch(AUTH_SIGNOUT)
           reject(err)
         })
     })
@@ -48,25 +48,30 @@ const actions = {
       fd.append('full_name', profileChanges.userFullName)
       axios.post(userProfileEndpoint, fd)
         .then(resp => {
-          commit(USER_PROFILE_UPDATE_SUCCESS, resp.data.data)
+          commit(USER_PROFILE_UPDATE_SUCCESS, profileChanges)
           resolve(resp)
         })
         .catch(err => {
           commit(USER_PROFILE_UPDATE_ERROR)
-          // TODO : MOVE THE DISPATCHER INTO AXIOS INTERCEPTOR
-          dispatch(AUTH_SIGNOUT)
           reject(err)
         })
     })
+  },
+  [USER_PROFILE_FULL_NAME_UPDATE]: ({commit}, newUserFullName) => {
+    commit(USER_PROFILE_FULL_NAME_UPDATE, newUserFullName)
+  },
+  [USER_PROFILE_PHONE_NUMBER_UPDATE]: ({commit}, newUserPhoneNumber) => {
+    commit(USER_PROFILE_PHONE_NUMBER_UPDATE, newUserPhoneNumber)
   }
 }
+
 const mutations = {
   [USER_PROFILE_REQUEST]: (state) => {
     state.status = 'loading'
   },
   [USER_PROFILE_SUCCESS]: (state, userProfile) => {
     state.status = 'success'
-    Vue.set(state, 'userProfile', userProfile)
+    state.userProfile = userProfile
   },
   [USER_PROFILE_ERROR]: (state) => {
     state.status = 'error'
@@ -77,11 +82,19 @@ const mutations = {
   [USER_PROFILE_UPDATE_REQUEST]: (state) => {
     state.updateProfileStatus = 'loading'
   },
-  [USER_PROFILE_UPDATE_SUCCESS]: (state) => {
+  [USER_PROFILE_UPDATE_SUCCESS]: (state, profileChanges) => {
     state.updateProfileStatus = 'success'
+    state.userProfile.full_name = profileChanges.userFullName
+    state.userProfile.phone_number = profileChanges.userPhoneNumber
   },
   [USER_PROFILE_UPDATE_ERROR]: (state) => {
     state.updateProfileStatus = 'error'
+  },
+  [USER_PROFILE_FULL_NAME_UPDATE]: (state, newUserFullName) => {
+    state.userProfile.full_name = newUserFullName
+  },
+  [USER_PROFILE_PHONE_NUMBER_UPDATE]: (state, newUserPhoneNumber) => {
+    state.userProfile.phone_number = newUserPhoneNumber
   }
 }
 

@@ -91,6 +91,14 @@
                                       <div>
                                         <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
                                         <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>label_outline</v-icon>
+                                          Sensor : {{sensorDetail.sensor_model}}
+                                        </h3>
+                                        <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>view_module</v-icon>
+                                          Value Type : {{sensorDetail.master_sensor_name}}
+                                        </h3>
+                                        <h3 class="body-2 mb-0">
                                           <v-icon color="primary" right>autorenew</v-icon>
                                           Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
                                         </h3>
@@ -124,6 +132,14 @@
                                     <v-card-title primary-title>
                                       <div>
                                         <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
+                                        <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>label_outline</v-icon>
+                                          Sensor : {{sensorDetail.sensor_model}}
+                                        </h3>
+                                        <h3 class="body-2 mb-0">
+                                          <v-icon color="primary" right>view_module</v-icon>
+                                          Value Type : {{sensorDetail.master_sensor_name}}
+                                        </h3>
                                         <h3 class="body-2 mb-0">
                                           <v-icon color="primary" right>autorenew</v-icon>
                                           Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
@@ -161,6 +177,14 @@
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
                                       <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>label_outline</v-icon>
+                                        Sensor : {{sensorDetail.sensor_model}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>view_module</v-icon>
+                                        Value Type : {{sensorDetail.master_sensor_name}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0">
                                         <v-icon color="primary" right>autorenew</v-icon>
                                         Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
                                       </h3>
@@ -195,6 +219,14 @@
                                   <v-card-title primary-title>
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>label_outline</v-icon>
+                                        Sensor : {{sensorDetail.sensor_model}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>view_module</v-icon>
+                                        Value Type : {{sensorDetail.master_sensor_name}}
+                                      </h3>
                                       <h3 class="body-2 mb-0">
                                         <v-icon color="primary" right>autorenew</v-icon>
                                         Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
@@ -236,6 +268,14 @@
                                   <v-card-title primary-title >
                                     <div>
                                       <h3 class="subheading mb-0 primary--text">{{sensorDetail.user_sensor_name}}</h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>label_outline</v-icon>
+                                        Sensor : {{sensorDetail.sensor_model}}
+                                      </h3>
+                                      <h3 class="body-2 mb-0">
+                                        <v-icon color="primary" right>view_module</v-icon>
+                                        Value Type : {{sensorDetail.master_sensor_name}}
+                                      </h3>
                                       <h3 class="body-2 mb-0">
                                         <v-icon color="primary" right>autorenew</v-icon>
                                         Latest Sensor Value : {{sensorDetail.latest_value}}{{sensorDetail.unit_symbol}}
@@ -431,8 +471,9 @@
                   label="Sensor Name"
                   :value="editedSensor.userSensorName"
                   v-model="editedSensor.userSensorName"
-                  :rules="[() => !!editedSensor.userSensorName || 'Sensor name cannot leaved blank']"
+                  :rules="[() => !!editedSensor.userSensorName || 'Sensor name cannot leaved blank', () => editedSensor.userSensorName.length <= 32 || 'Sensor name can not be longer than 32 character']"
                   required
+                  :counter="32"
                 ></v-text-field>
               <!--Enable or disable threshold -->
               <v-layout wrap>
@@ -489,10 +530,27 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn color="blue darken-1" flat @click.native="closeEditUserSensorDialog">Cancel</v-btn>
-            <v-btn color="blue darken-1" :disabled="!editSensorFormValid" flat @click.native="submitEditUserSensor">Update</v-btn>
+            <v-btn class="white--text" color="blue darken-1" :disabled="!editSensorFormValid" @click.native="submitEditUserSensor">Update</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <v-tooltip left>
+      <!--Add new device button-->
+      <v-btn
+        fixed
+        dark
+        fab
+        bottom
+        right
+        color="teal"
+        slot="activator"
+        :to="{'name' : 'AddUserDevice'}"
+      >
+        <v-icon>add</v-icon>
+      </v-btn>
+        <span>Add new device</span>
+      </v-tooltip>
     </v-flex>
     <!--Snackbar-->
     <v-snackbar
@@ -521,8 +579,8 @@
           warning: 'Latest value goes over threshold',
           normal: 'Latest value is normal',
           disabled: 'Threshold is disabled',
-          aboveThreshold: 'You will be notified when the sensor value is above the threshold set',
-          belowThreshold: 'You will be notified when the sensor value is below the threshold set'
+          aboveThreshold: 'You will be notified when the sensor value is above the set threshold',
+          belowThreshold: 'You will be notified when the sensor value is below the set threshold'
         },
         editSensorDialog: false,
         editedSensor: {
@@ -617,7 +675,7 @@
       timeConverter: function (unixTimeStamp) {
         // Convert unix time stamp into regular date
         const date = new Date(unixTimeStamp * 1000)
-        return date.getDate() + '/' + date.getMonth() + '/' + date.getFullYear()
+        return ('0' + date.getDate()).slice(-2) + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + date.getFullYear()
       },
       editUserSensor: function (userSensor) {
         this.editedSensor.userSensorName = userSensor.user_sensor_name
