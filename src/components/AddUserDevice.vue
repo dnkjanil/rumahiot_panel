@@ -31,21 +31,60 @@
           <v-stepper-items>
             <!--Choose board-->
             <v-stepper-content step="1">
-              <v-flex xs6>
-                <v-select
-                  :items="supportedBoardList"
-                  v-model="supportedBoardList"
-                  label="Select"
-                  single-line
-                  item-text="board_name"
-                  item-value="abbr"
-                  return-object
-                  :hint="`${supportedBoardList.board_name}, ${supportedBoardList.chip}`"
-                  persistent-hint
-                ></v-select>
-              </v-flex>
-              <v-btn color="primary" @click.native="e1 = 2">Continue</v-btn>
-              <v-btn flat>Cancel</v-btn>
+              <v-container grid-list-xl fluid>
+                <v-layout row wrap>
+                  <v-flex xs12 sm6>
+                    <v-select
+                      :items="supportedBoardList"
+                      v-model="selectedBoard"
+                      label="Choose your board model"
+                      class="input-group--focused"
+                      item-text="board_name"
+                      prepend-icon="fa-microchip"
+                      :loading="supportedBoardListLoading"
+                      autocomplete
+                      required
+                    ></v-select>
+                  </v-flex>
+                  <v-flex v-if="selectedBoard" xs12 sm6>
+                    <v-card color="grey lighten-4" class="black--text">
+                      <v-container fluid grid-list-lg>
+                        <v-layout row>
+                          <v-flex xs7>
+                            <div>
+                              <div class="headline">{{selectedBoard.board_name}}</div>
+                              <div>
+                                <h3 class="body-2 mb-0">
+                                  <!--<v-icon color="primary" right>fa-microchip</v-icon>-->
+                                  Controller : {{selectedBoard.chip}}
+                                </h3>
+                              </div>
+                              <div>
+                                <h3 class="body-2 mb-0">
+                                  <!--<v-icon color="primary" right>fa-microchip</v-icon>-->
+                                  Manufacturer : {{selectedBoard.manufacturer}}
+                                  <a :href="selectedBoard.board_specification" target="_blank">Detailed Specifications</a>
+                                  <br>
+                                  <a :href="selectedBoard.board_image_source" target="_blank">Picture Source </a>
+                                </h3>
+                              </div>
+                            </div>
+                          </v-flex>
+                          <v-flex xs5>
+                            <v-card-media
+                              :src="selectedBoard.board_image"
+                              height="200px"
+                              contain
+                            ></v-card-media>
+                          </v-flex>
+                        </v-layout>
+                      </v-container>
+                    </v-card>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+
+              <v-btn color="primary" @click.native="e1 = 2" :disabled="!selectedBoard" >Continue</v-btn>
             </v-stepper-content>
             <v-stepper-content step="2">
               <v-card color="grey lighten-1" class="mb-5" height="200px"></v-card>
@@ -88,6 +127,9 @@
             disabled: true
           }
         ],
+        // User selected board
+        selectedBoard: '',
+        supportedBoardListLoading: false,
         supportedBoardList: [],
         supportedBoardCount: 0,
         supportedSensorList: [],
@@ -122,15 +164,12 @@
       },
       loadSupportedSensorList: async function () {
         try {
+          // Loading bar
+          this.supportedBoardListLoading = true
           this.$store.dispatch(GET_SUPPORTED_SENSOR_REQUEST)
             .then((resp) => {
-              console.log('added')
-            })
-            .catch(() => {
-              this.$store.dispatch(AUTH_SIGNOUT)
-                .then(() => {
-                  this.$router.push('/signin')
-                })
+              // Loading bar
+              this.supportedBoardListLoading = false
             })
         } catch (error) {
           // Display client error

@@ -348,7 +348,7 @@
                           </div>
                         </v-card-title>
                         <v-container
-                          style="max-height: 200px"
+                          style="max-height: 300px"
                           class="scroll-y">
                           <v-list two-line>
                             <template v-for="sensor in deviceSensors">
@@ -360,6 +360,9 @@
                                   </v-list-tile-sub-title>
                                   <v-list-tile-sub-title>Sensor Threshold :
                                     {{sensor.sensor_threshold}}{{sensor.unit_symbol}}
+                                  </v-list-tile-sub-title>
+                                  <v-list-tile-sub-title>Value Type :
+                                    {{sensor.master_sensor_name}}
                                   </v-list-tile-sub-title>
                                 </v-list-tile-content>
                                 <!--If Threshold is enabled-->
