@@ -20,13 +20,13 @@
         <v-stepper v-model="e1">
           <!--Stepper header-->
           <v-stepper-header>
-            <v-stepper-step editable step="1" :complete="e1 > 1">Choose Your Board</v-stepper-step>
+            <v-stepper-step  step="1" :complete="e1 > 1">Choose Your Board</v-stepper-step>
             <v-divider></v-divider>
-            <v-stepper-step editable step="2" :complete="e1 > 2">Choose Your Sensor</v-stepper-step>
+            <v-stepper-step  step="2" :complete="e1 > 2">Choose Your Sensor</v-stepper-step>
             <v-divider></v-divider>
-            <v-stepper-step editable step="3" :complete="e1 > 2">Pick Device Location</v-stepper-step>
+            <v-stepper-step  step="3" :complete="e1 > 3">Pick Device Location</v-stepper-step>
             <v-divider></v-divider>
-            <v-stepper-step editable step="4">Add Network Connection</v-stepper-step>
+            <v-stepper-step  step="4">Add Network Connection</v-stepper-step>
           </v-stepper-header>
           <v-stepper-items>
             <!--Choose board-->
@@ -83,23 +83,52 @@
                   </v-flex>
                 </v-layout>
               </v-container>
-
               <v-btn color="primary" @click.native="e1 = 2" :disabled="!selectedBoard" >Continue</v-btn>
             </v-stepper-content>
             <v-stepper-content step="2">
               <v-card color="grey lighten-1" class="mb-5" height="200px"></v-card>
+              <v-btn color="primary" flat @click.native="e1 = 1"  >Previous</v-btn>
               <v-btn color="primary" @click.native="e1 = 3">Continue</v-btn>
-              <v-btn flat>Cancel</v-btn>
             </v-stepper-content>
+            <!--Pick location-->
             <v-stepper-content step="3">
-              <v-card color="grey lighten-1" class="mb-5" height="200px"></v-card>
-              <v-btn color="primary" @click.native="e1 = 4">Continue</v-btn>
-              <v-btn flat>Cancel</v-btn>
+              <v-card flat>
+                <!--Gmap Autocomplete-->
+                <v-text-field
+                  label="Pick Location"
+                  class="input-group--focused"
+                  v-model="searchedAddress"
+                  id="searched_address"
+                  required
+                  append-icon="search"
+                >
+                </v-text-field>
+                <!--Gmap component-->
+                  <gmap-map
+                    :center="addDeviceMapCenter"
+                    :zoom="15"
+                    style="width: 100%; height: 300px"
+                  >
+                    <!--Marker Location-->
+                    <gmap-marker
+                      v-if="selectedDeviceLocation"
+                      :position="selectedDeviceLocation.position"
+                      :clickable="true"
+                      :draggable="true"
+                      ref="addDeviceMarkerRef"
+                      @click="updatePosition"
+                      @dragend="updatePosition"
+                    ></gmap-marker>
+                  </gmap-map>
+
+              </v-card>
+              <v-btn color="primary" flat @click.native="e1 = 2"  >Previous</v-btn>
+              <v-btn color="primary" @click.native="e1 = 4" :disabled="!selectedDeviceLocation || !searchedAddress">Continue</v-btn>
             </v-stepper-content>
             <v-stepper-content step="4">
               <v-card color="grey lighten-1" class="mb-5" height="200px"></v-card>
-              <v-btn color="primary" @click.native="e1 = 1">Continue</v-btn>
-              <v-btn flat>Cancel</v-btn>
+              <v-btn color="primary" flat @click.native="e1 = 3"  >Previous</v-btn>
+              <v-btn color="primary" @click.native="e1 = 1">Add device</v-btn>
             </v-stepper-content>
           </v-stepper-items>
         </v-stepper>
@@ -112,10 +141,27 @@
 <script>
   import {GET_SUPPORTED_BOARD_REQUEST, GET_SUPPORTED_SENSOR_REQUEST} from '../store/actions/gudang'
   import {AUTH_SIGNOUT} from '../store/actions/sidik'
+  import {loaded} from 'vue2-google-maps'
 
   export default {
     data () {
       return {
+        // Destination data items
+        searchedAddress: '',
+        searchedAddressObject: {},
+        addDeviceMapCenter: {
+          lat: 47.376332,
+          lng: 8.547511
+        },
+        selectedDeviceLocation: '',
+        // center: {lat: 47.376332, lng: 8.547511},
+        // markers: [{
+        //   position: [47.376332, 8.547511],
+        //   text: 'Hauptgebäude der ETH Zürich'
+        // }, {
+        //   position: [47.374592, 8.548867],
+        //   text: 'Hauptgebäude der Universität Zürich'
+        // }],
         e1: 0,
         breadcrumbItems: [
           {
@@ -134,17 +180,27 @@
         supportedBoardCount: 0,
         supportedSensorList: [],
         supportedSensorCount: 0,
-        select: { board_name: '', chip: '' },
+        select: {board_name: '', chip: ''},
         items: [
-          { state: 'Florida', abbr: 'FL' },
-          { state: 'Georgia', abbr: 'GA' },
-          { state: 'Nebraska', abbr: 'NE' },
-          { state: 'California', abbr: 'CA' },
-          { state: 'New York', abbr: 'NY' }
+          {state: 'Florida', abbr: 'FL'},
+          {state: 'Georgia', abbr: 'GA'},
+          {state: 'Nebraska', abbr: 'NE'},
+          {state: 'California', abbr: 'CA'},
+          {state: 'New York', abbr: 'NY'}
         ]
       }
     },
     methods: {
+      updatePosition () {
+        this.selectedDeviceLocation.position.lat = this.$refs.addDeviceMarkerRef.$markerObject.position.lat()
+        this.selectedDeviceLocation.position.lng = this.$refs.addDeviceMarkerRef.$markerObject.position.lng()
+      },
+      setPlace (place) {
+        this.latLng = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        }
+      },
       loadSupportedBoardList: async function () {
         try {
           this.$store.dispatch(GET_SUPPORTED_BOARD_REQUEST)
@@ -175,11 +231,46 @@
           // Display client error
           console.error(error)
         }
+      },
+      loadAutoComplete () {
+        /* eslint-disable */
+        let methodScope = this
+        loaded.then(() => {
+          let self = this
+          let searchedAddressInput = document.getElementById('searched_address')
+          let searchedAddressAutoComplete = new google.maps.places.Autocomplete(searchedAddressInput)
+          searchedAddressAutoComplete.addListener('place_changed', function () {
+            let place = searchedAddressAutoComplete.getPlace()
+            self.searchedAddressObject = {
+              place
+            }
+            const address = []
+            // Iterate through address_components
+            for (let i = 0; i < place.address_components.length; i++) {
+              address.push(place.address_components[i] && place.address_components[i].short_name || '')
+            }
+            address.join(' ')
+            // Change searchedAddress Model so it will shows address selected
+            self.searchedAddress = address
+            // Update location marker
+            self.selectedDeviceLocation = {
+              position : {
+                lat: place.geometry.location.lat(),
+                lng : place.geometry.location.lng()
+              }
+            }
+            self.addDeviceMapCenter.lat = place.geometry.location.lat()
+            self.addDeviceMapCenter.lng = place.geometry.location.lng()
+          })
+        })
       }
     },
     beforeMount () {
       this.loadSupportedBoardList()
       this.loadSupportedSensorList()
+    },
+    mounted () {
+      this.loadAutoComplete()
     }
   }
 </script>

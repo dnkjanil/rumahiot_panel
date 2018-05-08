@@ -323,7 +323,6 @@
                                   @closeclick="infoWinOpen=false">
                   <v-tabs
                     centered
-                    v-model="active"
                     color="blue"
                     dark
                     height="50"
@@ -352,7 +351,7 @@
                           class="scroll-y">
                           <v-list two-line>
                             <template v-for="sensor in deviceSensors">
-                              <v-list-tile avatar ripple :key="index" @click="">
+                              <v-list-tile avatar ripple :key="sensor.user_sensor_uuid" @click="">
                                 <v-list-tile-content>
                                   <v-list-tile-title>{{sensor.user_sensor_name}}</v-list-tile-title>
                                   <v-list-tile-sub-title class="text--primary">Latest Sensor Value :
@@ -623,7 +622,6 @@
           lat: 0,
           lng: 0
         },
-        e1: '1',
         infoWinOpen: false,
         currentMidx: null,
         //  optional: offset infowindow so it visually sits nicely on top of our marker

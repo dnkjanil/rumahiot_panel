@@ -9,15 +9,8 @@ import AddUserDevice from '@/components/AddUserDevice'
 import AccountLogs from '@/components/AccountLogs'
 import DeviceData from '@/components/DeviceData'
 import store from '@/store'
-import * as VueGoogleMaps from 'vue2-google-maps'
 
 Vue.use(Router)
-Vue.use(VueGoogleMaps, {
-  load: {
-    key: 'AIzaSyCEtcrfWWhc3uP_sdPNnk-2ZoILF5OP46U ',
-    libraries: 'places'
-  }
-})
 
 // Authenticatiion rules
 const ifNotAuthenticated = (to, from, next) => {

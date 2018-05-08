@@ -8,8 +8,17 @@ import 'vuetify/dist/vuetify.min.css'
 import axios from 'axios'
 import CripVueLoading from 'crip-vue-loading'
 import store from '@/store'
+import * as VueGoogleMaps from 'vue2-google-maps'
 
 Vue.use(Vuetify)
+
+// Gmaps
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyCEtcrfWWhc3uP_sdPNnk-2ZoILF5OP46U',
+    libraries: 'places'
+  }
+})
 
 // For global token accross axios
 const token = localStorage.getItem('rumahiot-token')
