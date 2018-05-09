@@ -146,7 +146,7 @@
                                   label="Wifi Password"
                                   :value="userWifiConnectionData.password"
                                   v-model="userWifiConnectionData.password"
-                                  :rules="[() => !!userWifiConnectionData.password || 'Wifi Password cannot leaved blank', () => userWifiConnectionData.password.length <= 63 || 'Wifi Password can not be longer than 63 character']"
+                                  :rules="[() => !!userWifiConnectionData.password || 'Wifi Password cannot leaved blank', () => userWifiConnectionData.password.length <= 63 || 'Wifi Password can not be longer than 63 character',  ()=> userWifiConnectionData.password.length >= 8 || 'Password must be atleast 8 character']"
                                   :counter="63"
                                   required
                                 ></v-text-field>
@@ -209,7 +209,7 @@
                         :append-icon-cb="() => (p1 = !p1)"
                         :type="p1 ? 'password' : 'text'"
                         :rules="[() => !!oldPassword || 'Please type your old password',() => oldPassword.length <= 50 || 'Password cannot be longer than 50 character', ()=> oldPassword.length >= 8 || 'Password must be atleast 8 character']"
-                        counter
+                        :counter="50"
                         required
                       ></v-text-field>
                       <v-text-field
@@ -220,7 +220,7 @@
                         :append-icon-cb="() => (p2 = !p2)"
                         :type="p2 ? 'password' : 'text'"
                         :rules="[() => !!newPassword || 'Please enter your new password',() => newPassword.length <= 50 || 'Password cannot be longer than 50 character', ()=> newPassword.length >= 8 || 'Password must be atleast 8 character']"
-                        counter
+                        :counter="50"
                         required
                       ></v-text-field>
                       <v-text-field
@@ -231,7 +231,7 @@
                         :append-icon-cb="() => (p3 = !p3)"
                         :type="p3 ? 'password' : 'text'"
                         :rules="[() => !!newPasswordRetype || 'Please retype your new password',() => newPassword == newPasswordRetype || 'Passwords does not match',() => newPasswordRetype.length <= 50 || 'Password cannot be longer than 50 character', ()=> newPasswordRetype.length >= 8 || 'Password must be atleast 8 character']"
-                        counter
+                        :counter="50"
                         required
                       ></v-text-field>
                     </v-flex>
@@ -249,17 +249,17 @@
               </v-container>
             </v-card>
           </v-tab-item>
-          <!--Snack bar-->
-          <v-snackbar
-            :timeout="profileSnackTimeOut"
-            :color="profileSnackColor"
-            v-model="profileSnack"
-            :multi-line="true"
-          >
-            {{ profileSnackMessage }}
-            <v-btn dark flat @click.native="profileSnack = false">Close</v-btn>
-          </v-snackbar>
         </v-tabs>
+        <!--Snack bar-->
+        <v-snackbar
+          :timeout="profileSnackTimeOut"
+          :color="profileSnackColor"
+          v-model="profileSnack"
+          :multi-line="true"
+        >
+          {{ profileSnackMessage }}
+          <v-btn dark flat @click.native="profileSnack = false">Close</v-btn>
+        </v-snackbar>
       </v-card>
     </v-flex>
   </v-layout>
@@ -304,7 +304,7 @@
           connectionName: '',
           ssid: '',
           securityEnabled: '0',
-          password: '-'
+          password: 'yourwifipassword'
         },
         userWifiConnectionTableHeader: [
           {
@@ -463,11 +463,6 @@
         this.wifiConnectionCardLine.submitButton = 'Add'
         this.wifiConnectionCardLine.submitFunction = this.onSubmitNewWifiConnection
         this.addNewWifiConnectionCard = true
-        // Reset Value
-        this.userWifiConnectionData.connectionName = ''
-        this.userWifiConnectionData.ssid = ''
-        this.userWifiConnectionData.securityEnabled = '0'
-        this.userWifiConnectionData.password = '-'
       }
     },
     computed: {

@@ -10,7 +10,7 @@ import {
 }
   from '../actions/sidik'
 
-import axios from 'axios/index'
+import axios from 'axios'
 
 const state = {
   token: localStorage.getItem('rumahiot-token') || '',

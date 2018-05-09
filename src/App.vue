@@ -22,6 +22,7 @@
         return new Promise(function (resolve, reject) {
           if (err.status === 403 && err.config && !err.config.__isRetryRequest) {
             // if you ever get an unauthorized, logout the user
+            console.log('disini bro')
             this.$store.dispatch(AUTH_SIGNOUT)
             this.$router.push('/signin')
             // you can also redirect to /login if needed !

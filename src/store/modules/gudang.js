@@ -27,7 +27,7 @@ import {
 } from '../actions/gudang'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
-import axios from 'axios/index'
+import axios from 'axios'
 
 const state = {
   'status': '',
@@ -72,7 +72,7 @@ const actions = {
       fd.append('connection_name', newWifiConnection.connectionName)
       fd.append('ssid', newWifiConnection.ssid)
       fd.append('security_enabled', newWifiConnection.securityEnabled)
-      fd.append('password', newWifiConnection.Password)
+      fd.append('password', newWifiConnection.password)
       axios.post(addUserWifiConnectionEndpoint, fd)
         .then(resp => {
           commit(ADD_USER_WIFI_CONNECTION_SUCCESS)
@@ -87,7 +87,7 @@ const actions = {
   [UPDATE_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}, wifiConnectionUpdate) => {
     return new Promise((resolve, reject) => {
       commit(UPDATE_USER_WIFI_CONNECTION_REQUEST)
-      const updateUserWifiConnectionEndpoint = 'http://localhost:8000/configure/user/connection/wifi/update'
+      const updateUserWifiConnectionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/user/connection/wifi/update'
       const fd = new FormData()
       fd.append('connection_name', wifiConnectionUpdate.connectionName)
       fd.append('ssid', wifiConnectionUpdate.ssid)

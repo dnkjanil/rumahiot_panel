@@ -33,7 +33,7 @@ Vue.use(CripVueLoading, {
   // Loader color when request fails
   failColor: '#ac2925',
   // Height of loader
-  height: '4px'
+  height: '3px'
 })
 
 Vue.config.productionTip = false

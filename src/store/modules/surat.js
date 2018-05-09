@@ -11,7 +11,7 @@ import {
 } from '../actions/surat'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
-import axios from 'axios/index'
+import axios from 'axios'
 
 const state = {
   'getDeviceNotificationLogStatus': '',
