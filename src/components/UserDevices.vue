@@ -81,7 +81,7 @@
                           <v-flex
                             xs3
                             v-for="sensorDetail in props.item.device_sensors"
-                            :key="sensorDetail.user_sensor_name"
+                            :key="sensorDetail.user_sensor_uuid"
                           >
                           <!--If the threshold is enabled-->
                             <template v-if="sensorDetail.threshold_enabled">
@@ -124,7 +124,7 @@
                                         <span>{{deviceListTooltip.warning}}</span>
                                       </v-tooltip>
                                       <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                        <v-icon color="pink">edit</v-icon>
+                                        <v-icon color="blue">edit</v-icon>
                                       </v-btn>
                                     </v-card-actions>
                                   </v-card>
@@ -166,7 +166,7 @@
                                         <span>{{deviceListTooltip.normal}}</span>
                                       </v-tooltip>
                                       <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                        <v-icon color="pink">edit</v-icon>
+                                        <v-icon color="blue">edit</v-icon>
                                       </v-btn>
                                     </v-card-actions>
                                   </v-card>
@@ -211,7 +211,7 @@
                                       <span>{{deviceListTooltip.warning}}</span>
                                     </v-tooltip>
                                     <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
+                                      <v-icon color="blue">edit</v-icon>
                                     </v-btn>
                                   </v-card-actions>
                                 </v-card>
@@ -254,7 +254,7 @@
                                       <span>{{deviceListTooltip.normal}}</span>
                                     </v-tooltip>
                                     <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
+                                      <v-icon color="blue">edit</v-icon>
                                     </v-btn>
                                   </v-card-actions>
                                 </v-card>
@@ -289,7 +289,7 @@
                                       <span>{{deviceListTooltip.disabled}}</span>
                                     </v-tooltip>
                                     <v-btn icon class="mx-0" @click="editUserSensor(sensorDetail)">
-                                      <v-icon color="pink">edit</v-icon>
+                                      <v-icon color="blue">edit</v-icon>
                                     </v-btn>
                                   </v-card-actions>
                                 </v-card>

@@ -22,7 +22,10 @@ import {
   REMOVE_USER_WIFI_CONNECTION_ERROR,
   ADD_USER_WIFI_CONNECTION_REQUEST,
   ADD_USER_WIFI_CONNECTION_SUCCESS,
-  ADD_USER_WIFI_CONNECTION_ERROR
+  ADD_USER_WIFI_CONNECTION_ERROR,
+  GET_BOARD_PIN_OPTION_REQUEST,
+  GET_BOARD_PIN_OPTION_SUCCESS,
+  GET_BOARD_PIN_OPTION_ERROR
 
 } from '../actions/gudang'
 
@@ -38,14 +41,16 @@ const state = {
   'userWifiConnectionList': {},
   'updateWifiConnectionStatus': '',
   'removeWifiConnectionStatus': '',
-  'addWifiConnectionStatus': ''
+  'addWifiConnectionStatus': '',
+  'boardPinOption': {}
 }
 
 const getters = {
   getDeviceList: state => state.userDeviceList,
   getSupportedBoardList: state => state.supportedBoardList,
   getSupportedSensorList: state => state.supportedSensorList,
-  getUserWifiConnectionList: state => state.userWifiConnectionList
+  getUserWifiConnectionList: state => state.userWifiConnectionList,
+  getBoardPinOption: state => state.boardPinOption
 }
 
 const actions = {
@@ -185,7 +190,23 @@ const actions = {
           reject(err)
         })
     })
+  },
+  [GET_BOARD_PIN_OPTION_REQUEST]: ({commit, dispatch}, boardPinOptionData) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_BOARD_PIN_OPTION_REQUEST)
+      const getBoardPinOptionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/board/pin/options?board_uuid=' + boardPinOptionData.supportedBoardUUID + '&sensor_uuid=' + boardPinOptionData.masterSensorReferenceUUID
+      axios.get(getBoardPinOptionEndpoint)
+        .then(resp => {
+          commit(GET_BOARD_PIN_OPTION_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_BOARD_PIN_OPTION_ERROR)
+          reject(err)
+        })
+    })
   }
+
 }
 
 const mutations = {
@@ -267,6 +288,16 @@ const mutations = {
   },
   [REMOVE_USER_WIFI_CONNECTION_ERROR]: (state) => {
     state.removeWifiConnectionStatus = 'error'
+  },
+  [GET_BOARD_PIN_OPTION_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_BOARD_PIN_OPTION_SUCCESS]: (state, pinMapping) => {
+    state.status = 'success'
+    state.boardPinOption = pinMapping
+  },
+  [GET_BOARD_PIN_OPTION_ERROR]: (state) => {
+    state.status = 'error'
   }
 }
 

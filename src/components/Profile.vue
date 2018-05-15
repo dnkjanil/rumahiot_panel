@@ -176,10 +176,10 @@
                     <td v-else>Disabled</td>
                     <td >
                       <v-btn icon class="mx-0" @click="editWifiConnection(props.item)">
-                        <v-icon color="pink">edit</v-icon>
+                        <v-icon color="blue">edit</v-icon>
                       </v-btn>
                       <v-btn icon class="mx-0" @click="removeWifiConnection(props.item)">
-                        <v-icon color="orange">delete</v-icon>
+                        <v-icon color="red">delete</v-icon>
                       </v-btn>
                     </td>
                   </template>

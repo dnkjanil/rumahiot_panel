@@ -4,6 +4,16 @@
       <v-fade-transition>
         <router-view></router-view>
       </v-fade-transition>
+      <!--Snack bar-->
+      <v-snackbar
+        :timeout="interceptorSnackTimeout"
+        :color="interceptorSnackColor"
+        v-model="interceptorSnack"
+        :multi-line="true"
+      >
+        {{ interceptorSnackMessage }}
+        <v-btn dark flat @click.native="interceptorSnack = false">Close</v-btn>
+      </v-snackbar>
     </v-content>
   </v-app>
 </template>
@@ -14,21 +24,35 @@
 
   export default {
     data () {
-      return {}
+      return {
+        // Snack for interceptor
+        interceptorSnack: false,
+        interceptorSnackMessage: '',
+        interceptorSnackColor: '',
+        interceptorSnackTimeout: 6000
+      }
+    },
+    methods: {
+      generateSnack: function (message, color) {
+        this.interceptorSnackMessage = message
+        this.interceptorSnackColor = color
+        this.interceptorSnack = true
+      }
     },
     name: 'App',
     created: function () {
-      axios.interceptors.response.use(undefined, function (err) {
-        return new Promise(function (resolve, reject) {
-          if (err.status === 403 && err.config && !err.config.__isRetryRequest) {
+      // Interceptor for expired or invalid token
+      axios.interceptors.response.use(undefined, err => {
+        let res = err.response
+        if (res.status === 401 && res.config && !res.config.__isRetryRequest) {
+          return new Promise((resolve, reject) => {
             // if you ever get an unauthorized, logout the user
-            console.log('disini bro')
             this.$store.dispatch(AUTH_SIGNOUT)
             this.$router.push('/signin')
-            // you can also redirect to /login if needed !
-          }
-          throw err
-        })
+            this.generateSnack(res.data.error.message, 'error')
+          })
+        }
+        throw err
       })
     }
   }
