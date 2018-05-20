@@ -17,6 +17,11 @@
           <v-tab-item id="device-list">
             <v-card>
               <v-card-title>
+                <v-btn icon @click="refreshDeviceList">
+                  <v-icon color="primary">
+                    refresh
+                  </v-icon>
+                </v-btn>
                 <span class="headline mb-1">My Devices</span><br>
                 <v-spacer></v-spacer>
                 <v-text-field
@@ -536,21 +541,21 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-
-      <v-tooltip left>
       <!--Add new device button-->
-      <v-btn
-        fixed
-        dark
-        fab
-        bottom
-        right
-        color="teal"
-        slot="activator"
-        :to="{'name' : 'AddUserDevice'}"
-      >
-        <v-icon>add</v-icon>
-      </v-btn>
+      <v-tooltip left>
+        <!--Add new device button-->
+        <v-btn
+          fixed
+          dark
+          fab
+          bottom
+          right
+          color="teal"
+          slot="activator"
+          :to="{'name' : 'AddUserDevice'}"
+        >
+          <v-icon>add</v-icon>
+        </v-btn>
         <span>Add new device</span>
       </v-tooltip>
     </v-flex>
@@ -576,6 +581,7 @@
   export default {
     data () {
       return {
+        myDeviceSpeedDial: false,
         editSensorFormValid: false,
         deviceListTooltip: {
           warning: 'Latest value goes over threshold',
@@ -659,6 +665,10 @@
       }
     },
     methods: {
+      // Refresh device list
+      refreshDeviceList: function () {
+        this.loadUserDevice()
+      },
       // When the marker is clicked
       toggleInfoWindow: function (marker, idx) {
         this.infoWindowPos = marker.position
@@ -728,6 +738,7 @@
             'limit': '',
             'query': ''
           }
+          this.deviceTableLoading = true
           this.$store.dispatch(USER_DEVICE_LIST_REQUEST, searchParameter)
             .then((resp) => {
               // Put the marker from the result

@@ -135,7 +135,6 @@
                 <v-btn color="teal" @click.native="openAddSensorCard"class="white--text mb-4">Add Sensor
                   <v-icon small right dark> </v-icon>
                 </v-btn>
-                {{addedSensor}}
                 <v-container fluid grid-list-md>
                   <v-layout row wrap>
                     <v-flex
@@ -152,14 +151,14 @@
                                 <div>
                                   <h3 class="body-2 mb-0">
                                     <!--<v-icon color="primary" right>fa-microchip</v-icon>-->
-                                    Model : {{sensor.sensor_model}}
+                                    Model : {{sensor.master_sensor_reference_data.sensor_model}}
                                   </h3>
                                 </div>
                               </div>
                             </v-flex>
                             <v-flex>
                               <v-card-media
-                                :src="sensor.sensor_image_url"
+                                :src="sensor.master_sensor_reference_data.sensor_image_url"
                                 height="65px"
                                 contain
                               ></v-card-media>
@@ -169,7 +168,7 @@
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <!--Threshold direction symbol-->
-                          <v-btn icon class="mx-0" @click="">
+                          <v-btn icon class="mx-0" @click="onUpdateSensorData(index)">
                             <v-icon color="blue">edit</v-icon>
                           </v-btn>
                           <v-btn icon class="mx-0" @click="removeAddedSensor(index)">
@@ -179,11 +178,11 @@
                       </v-card>
                     </v-flex>
                   </v-layout>
-
+                  <v-spacer></v-spacer>
                 </v-container>
               </v-card>
               <!--Add new sensor dialog-->
-                <v-dialog v-model="addSensorCard" max-width="700px">
+              <v-dialog v-model="addSensorCard" max-width="700px" persistent>
                   <v-card>
                     <v-card-title>
                       <span class="headline">Add Sensor To Your Board</span>
@@ -264,7 +263,6 @@
                       <v-card-title>
                         <span class="headline">Sensor Configuration</span>
                       </v-card-title>
-                      <!--{{selectedBoardPinOption}}-->
                       <!--Iterate through sensor pin mapping-->
                       <v-card-text>
                         <v-container grid-list-md>
@@ -295,6 +293,122 @@
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
+              <!--Update sensor dialog-->
+              <v-dialog v-model="updateSensorCard" v-if="updateSensorDataTemp" max-width="700px" persistent>
+                <v-card>
+                  <v-card-title>
+                    <span class="headline">Update Sensor {{addedSensor[updatedSensorIndex].added_sensor_name}} </span>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-container grid-list-md>
+                      <v-layout row wrap>
+                        <v-flex xs12 sm6>
+                          <v-select
+                            :items="supportedSensorList"
+                            v-model="updateSensorDataTemp.master_sensor_reference_data"
+                            label="Choose your sensor"
+                            class="input-group--focused"
+                            item-text="sensor_model"
+                            item-value="sensor_model"
+                            prepend-icon="fa-assistive-listening-systems"
+                            return-object
+                            :loading="supportedSensorListLoading"
+                            autocomplete
+                            :rules="[() => !!updateSensorDataTemp.master_sensor_reference_data || 'Please select your sensor model']"
+                            required
+                          ></v-select>
+                        </v-flex>
+                        <v-flex v-if="selectedSensor" xs12 sm6>
+                          <v-card color="grey lighten-4" class="black--text">
+                            <v-container fluid grid-list-lg>
+                              <v-layout row>
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="headline">{{selectedSensor.sensor_model}}</div>
+                                    <div>
+                                      <h3 class="body-3 mb-0">
+                                        Measures :
+                                      </h3>
+                                      <h3 v-for="value_type in selectedSensor.sensor_value_type" class="body-1 mb-0">
+                                        <strong>{{value_type.value_type}}</strong> , Unit : {{value_type.unit}}({{value_type.unit_symbol}})
+                                        <v-divider></v-divider>
+                                      </h3>
+                                    </div>
+                                    <div>
+                                      <h3 class="body-2 mb-0">
+                                        <a :href="selectedSensor.sensor_image_source" target="_blank">Picture Source </a>
+                                      </h3>
+                                    </div>
+                                  </div>
+                                </v-flex>
+                                <v-flex xs5>
+                                  <v-card-media
+                                    :src="selectedSensor.sensor_image_url"
+                                    height="100px"
+                                    contain
+                                  ></v-card-media>
+                                </v-flex>
+                              </v-layout>
+                            </v-container>
+                          </v-card>
+                        </v-flex>
+                      </v-layout>
+                      <!--Sensor name -->
+                      <v-layout row wrap>
+                        <v-flex xs12 sm6>
+                          <v-text-field
+                            label="Sensor Name"
+                            v-model="updateSensorDataTemp.added_sensor_name"
+                            :rules="[() => !!updateSensorDataTemp.added_sensor_name || 'Please give your sensor a name',() => updateSensorDataTemp.added_sensor_name.length <= 32 || 'Sensor name cannot be longer than 32 character']"
+                            :counter="32"
+                            required
+                            prepend-icon="fa-font"
+                          ></v-text-field>
+                        </v-flex>
+                        <v-flex xs12 sm6>
+                          <span> You can set <strong>notification threshold</strong> so you get notified when specific sensor value goes over threshold later in <strong>My Devices</strong> page, <strong>all notifications are disabled by default.</strong></span>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
+                  </v-card-text>
+                  <v-divider></v-divider>
+                  <template v-if="selectedBoardPinOption">
+                    <!--Sensor configuration-->
+                    <v-card-title>
+                      <span class="headline">Sensor Configuration</span>
+                    </v-card-title>
+                    <!--Iterate through sensor pin mapping-->
+                    <v-card-text v-if="">
+                      <v-container grid-list-md>
+                        <template v-for="(pin, index) in updateSensorDataTemp.sensor_pin_mappings">
+                          <h3 class="body-2 mb-0">
+                            Sensor Pin {{pin.sensor_pin}} : {{pin.sensor_pin_name}}
+                          </h3>
+                          <v-flex xs6 sm6>
+                            <v-select
+                              :items="selectedBoardPinOption.pin_mapping[index].mapping_options"
+                              label="Board Pin"
+                              max-height="400"
+                              persistent-hint
+                              item-text="device_pin_name"
+                              item-value="device_pin_name"
+                              return-object
+                              required
+                              v-model="updateSensorDataTemp.sensor_pin_mappings[index]"
+                              :rules="[() => !!updateSensorDataTemp.sensor_pin_mappings[index] || 'Please select board pin']"
+                            ></v-select>
+                          </v-flex>
+                        </template>
+                      </v-container>
+                    </v-card-text>
+                  </template>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click.native="closeUpdateSensorCard">Cancel</v-btn>
+                    <v-btn class="white--text" color="blue darken-1" :disabled="!updateSensorFormValid" @click.native="updateSensorData">Update</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
                 <br/>
                 <v-btn color="primary" flat @click.native="e1 = 1"  >Previous</v-btn>
                 <v-btn color="primary" @click.native="e1 = 3" :disabled="addedSensor.length == 0">Continue</v-btn>
@@ -450,7 +564,7 @@
                 </v-card>
               </v-dialog>
               <v-btn color="primary" flat @click.native="e1 = 3"  >Previous</v-btn>
-              <v-btn color="primary" @click.native="e1 = 1" :disabled="!selectedUserWifiConnection">Add device</v-btn>
+              <v-btn color="primary" @click.native="onAddNewDevice" :disabled="!selectedUserWifiConnection">Add device</v-btn>
             </v-stepper-content>
           </v-stepper-items>
         </v-stepper>
@@ -471,12 +585,26 @@
 
 
 <script>
-  import {GET_SUPPORTED_BOARD_REQUEST, GET_SUPPORTED_SENSOR_REQUEST, GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, GET_BOARD_PIN_OPTION_REQUEST} from '../store/actions/gudang'
+  import {ADD_NEW_DEVICE_REQUEST, GET_SUPPORTED_BOARD_REQUEST, GET_SUPPORTED_SENSOR_REQUEST, GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, GET_BOARD_PIN_OPTION_REQUEST} from '../store/actions/gudang'
   import {loaded} from 'vue2-google-maps'
 
   export default {
     data () {
       return {
+        // Add new device complete structure
+        newDevice: {
+          position: '',
+          location_text: '',
+          device_name: '',
+          device_data_sending_interval: '',
+          supported_board_uuid: '',
+          added_sensors: [],
+          user_wifi_connection_uuid: ''
+        },
+        // Update sensor
+        updateSensorCard: false,
+        updateSensorDataTemp: '',
+        updatedSensorIndex: '',
         // Time interval slider
         // Minimum value : 300
         dataSendingInterval: 5,
@@ -549,17 +677,69 @@
       }
     },
     methods: {
+      generateNewDeviceData: function () {
+        // Put required data into newDevice
+        this.newDevice.position = this.selectedDeviceLocation.position
+        this.newDevice.location_text = this.searchedAddress
+        this.newDevice.device_name = this.deviceName
+        this.newDevice.device_data_sending_interval = this.dataSendingInterval
+        this.newDevice.supported_board_uuid = this.selectedBoard.board_uuid
+        this.newDevice.user_wifi_connection_uuid = this.selectedUserWifiConnection.user_wifi_connection_uuid
+        // Put the added sensor
+        this.newDevice.added_sensors = JSON.parse(JSON.stringify(this.addedSensor))
+        // Move the master sensor uuid and remove the unrelevant data
+        for (let i = 0; i < this.newDevice.added_sensors.length; i++) {
+          this.newDevice.added_sensors[i].master_sensor_reference_uuid = this.newDevice.added_sensors[i].master_sensor_reference_data.master_sensor_reference_uuid
+          delete this.newDevice.added_sensors[i].master_sensor_reference_data
+          delete this.newDevice.added_sensors[i].random_uuid
+        }
+      },
+      onAddNewDevice: function () {
+        // Generate the device data
+        this.generateNewDeviceData()
+        try {
+          const rootScope = this
+          this.$store.dispatch(ADD_NEW_DEVICE_REQUEST, this.newDevice)
+            .then((resp) => {
+              this.generateSnack(resp.data.success.message, 'success')
+              this.e1 = 1
+              // Delay for 3 second
+              setTimeout(function () { rootScope.$router.push('/mydevices') }, 3000)
+            })
+            .catch((err) => {
+              this.generateSnack(err.response.data.error.message, 'error')
+            })
+        } catch (error) {
+          // Display client error
+          console.error(error)
+        }
+      },
+      updateSensorData: function () {
+        // Subtitute the data
+        this.addedSensor[this.updatedSensorIndex] = this.updateSensorDataTemp
+        // Reset update sensor data temp
+        this.updateSensorDataTemp = ''
+      },
+      onUpdateSensorData: function (addedSensorIndex) {
+        // Clone the object (using = will copy it by reference, use stringify instead)
+        this.updateSensorDataTemp = JSON.parse(JSON.stringify(this.addedSensor[addedSensorIndex]))
+        // Open update sensor card
+        this.updateSensorCard = true
+        // Load the option data
+        const boardPinOptionData = {
+          supportedBoardUUID: this.selectedBoard.board_uuid,
+          masterSensorReferenceUUID: this.updateSensorDataTemp.master_sensor_reference_data.master_sensor_reference_uuid
+        }
+        this.loadBoardPinOption(boardPinOptionData)
+        // Copy the index
+        this.updatedSensorIndex = addedSensorIndex
+      },
       appendAddedSensor: function () {
         let addedSensorData = {
           added_sensor_name: this.addedSensorName,
-          // Dont forget to pop the sensor model amd sensor_image_url, value type before sending it to backend
-          sensor_model: this.selectedSensor.sensor_model,
-          master_sensor_reference_uuid: this.selectedSensor.master_sensor_reference_uuid,
+          master_sensor_reference_data: this.selectedSensor,
           sensor_pin_mappings: this.selectedSensorOptions,
-          random_uuid: this.selectedBoardPinOption.random_uuid,
-          sensor_image_url: this.selectedSensor.sensor_image_url,
-          sensor_value_type: this.selectedSensor.sensor_value_type,
-          sensor_image_source: this.selectedSensor.sensor_image_source
+          random_uuid: this.selectedBoardPinOption.random_uuid
         }
         // Push it into added sensor
         this.addedSensor.push(addedSensorData)
@@ -575,9 +755,17 @@
       },
       openAddSensorCard: function () {
         this.addSensorCard = true
+        // Remove the pin option
+        this.selectedBoardPinOption = ''
       },
       closeAddSensorCard: function () {
         this.addSensorCard = false
+        this.selectedSensor = ''
+      },
+      closeUpdateSensorCard: function () {
+        this.updateSensorCard = false
+        // Clear the temp
+        this.updateSensorDataTemp = ''
       },
       openNewWifiConnectionCard: function () {
         this.addNewWifiConnectionCard = true
@@ -691,7 +879,7 @@
             }
             address.join(' ')
             // Change searchedAddress Model so it will shows address selected
-            self.searchedAddress = address
+            self.searchedAddress = address.join(', ')
             // Update location marker
             self.selectedDeviceLocation = {
               position: {
@@ -755,6 +943,15 @@
       addSensorFormValid: {
         get: function () {
           return this.pinOptionValid() && this.addedSensorName && this.selectedSensor
+        },
+        set: function () {
+          // TDo nothing
+        }
+      },
+      // To make sure the name is typed in (All other field can't be nulled)
+      updateSensorFormValid: {
+        get: function () {
+          return this.updateSensorDataTemp.added_sensor_name
         },
         set: function () {
           // TDo nothing

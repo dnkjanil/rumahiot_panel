@@ -107,7 +107,8 @@
           </v-list>
           </v-container>
           <v-card-actions>
-            <v-btn block flat color="primary" @click="clearAllDeviceNotificationLog">Clear All Notification</v-btn>
+            <v-btn block color="primary" @click="getDeviceNotificationLog">Check Notification</v-btn>
+            <v-btn block flat color="red" @click="clearAllDeviceNotificationLog">Clear All </v-btn>
           </v-card-actions>
         </v-card>
       </v-menu
@@ -269,9 +270,6 @@
           this.$store.dispatch(DEVICE_NOTIFICATION_LOG_LIST_REQUEST)
             .then((resp) => {
               this.deviceNotificationLog = this.$store.getters.getDeviceNotificationList
-            })
-            .catch(() => {
-              this.$router.push('/signin')
             })
         } catch (err) {
           console.error(err)

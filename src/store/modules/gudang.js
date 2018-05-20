@@ -25,7 +25,10 @@ import {
   ADD_USER_WIFI_CONNECTION_ERROR,
   GET_BOARD_PIN_OPTION_REQUEST,
   GET_BOARD_PIN_OPTION_SUCCESS,
-  GET_BOARD_PIN_OPTION_ERROR
+  GET_BOARD_PIN_OPTION_ERROR,
+  ADD_NEW_DEVICE_REQUEST,
+  ADD_NEW_DEVICE_SUCCESS,
+  ADD_NEW_DEVICE_ERROR
 
 } from '../actions/gudang'
 
@@ -35,6 +38,7 @@ import axios from 'axios'
 const state = {
   'status': '',
   'updateSensorStatus': '',
+  'addNewDeviceStatus': '',
   'userDeviceList': {},
   'supportedBoardList': {},
   'supportedSensorList': {},
@@ -54,6 +58,21 @@ const getters = {
 }
 
 const actions = {
+  [ADD_NEW_DEVICE_REQUEST]: ({commit, dispatch}, newDevice) => {
+    return new Promise((resolve, reject) => {
+      commit(ADD_NEW_DEVICE_REQUEST)
+      const addNewDeviceEndpoint = 'https://gudang.rumahiot.panjatdigital.com/store/device/new'
+      axios.post(addNewDeviceEndpoint, newDevice)
+        .then(resp => {
+          commit(ADD_NEW_DEVICE_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(ADD_NEW_DEVICE_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(GET_USER_WIFI_CONNECTION_REQUEST)
@@ -298,6 +317,15 @@ const mutations = {
   },
   [GET_BOARD_PIN_OPTION_ERROR]: (state) => {
     state.status = 'error'
+  },
+  [ADD_NEW_DEVICE_REQUEST]: (state) => {
+    state.addNewDeviceStatus = 'loading'
+  },
+  [ADD_NEW_DEVICE_SUCCESS]: (state) => {
+    state.addNewDeviceStatus = 'success'
+  },
+  [ADD_NEW_DEVICE_ERROR]: (state) => {
+    state.addNewDeviceStatus = 'error'
   }
 }
 

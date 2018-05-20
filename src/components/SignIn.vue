@@ -83,7 +83,7 @@
             const {email, password} = this
             this.$store.dispatch(AUTH_REQUEST, {email, password})
               .then(() => {
-                this.$router.push('/')
+                this.$router.push('/dashboard')
               })
               .catch((err) => {
                 this.generateSnack(err.response.data.error.message, 'error')
