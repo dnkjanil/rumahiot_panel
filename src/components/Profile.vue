@@ -51,6 +51,7 @@
                         disabled
                       ></v-text-field>
                       <v-text-field
+                        v-if="computedUserFullName"
                         name="full_name"
                         label="Full Name"
                         v-model="computedUserFullName"
@@ -60,6 +61,7 @@
                         required
                       ></v-text-field>
                       <v-text-field
+                        v-if="computedUserPhoneNumber"
                         append-icon="phone"
                         name="phone_number"
                         label="Phone Number"
@@ -266,8 +268,7 @@
 </template>
 <script>
   import {CHANGE_PASSWORD_REQUEST} from '../store/actions/sidik'
-  import {USER_PROFILE_UPDATE_REQUEST, USER_PROFILE_FULL_NAME_UPDATE, USER_PROFILE_PHONE_NUMBER_UPDATE} from '../store/actions/lemari'
-  import {GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, UPDATE_USER_WIFI_CONNECTION_REQUEST, REMOVE_USER_WIFI_CONNECTION_REQUEST} from '../store/actions/gudang'
+  import {GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, UPDATE_USER_WIFI_CONNECTION_REQUEST, REMOVE_USER_WIFI_CONNECTION_REQUEST, USER_PROFILE_UPDATE_REQUEST, USER_PROFILE_FULL_NAME_UPDATE, USER_PROFILE_PHONE_NUMBER_UPDATE} from '../store/actions/lemari'
 
   export default {
     data () {

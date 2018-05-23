@@ -17,11 +17,14 @@
           <v-tab-item id="device-list">
             <v-card>
               <v-card-title>
-                <v-btn icon @click="refreshDeviceList">
-                  <v-icon color="primary">
-                    refresh
-                  </v-icon>
-                </v-btn>
+                <v-tooltip left>
+                  <v-btn icon @click="refreshDeviceList" slot="activator">
+                    <v-icon color="primary">
+                      refresh
+                    </v-icon>
+                  </v-btn>
+                  <span>Refresh device data</span>
+                </v-tooltip>
                 <span class="headline mb-1">My Devices</span><br>
                 <v-spacer></v-spacer>
                 <v-text-field

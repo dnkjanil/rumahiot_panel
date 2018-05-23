@@ -11,24 +11,18 @@ import {
   GET_SUPPORTED_SENSOR_REQUEST,
   GET_SUPPORTED_SENSOR_SUCCESS,
   GET_SUPPORTED_SENSOR_ERROR,
-  GET_USER_WIFI_CONNECTION_REQUEST,
-  GET_USER_WIFI_CONNECTION_SUCCESS,
-  GET_USER_WIFI_CONNECTION_ERROR,
-  UPDATE_USER_WIFI_CONNECTION_REQUEST,
-  UPDATE_USER_WIFI_CONNECTION_SUCCESS,
-  UPDATE_USER_WIFI_CONNECTION_ERROR,
-  REMOVE_USER_WIFI_CONNECTION_REQUEST,
-  REMOVE_USER_WIFI_CONNECTION_SUCCESS,
-  REMOVE_USER_WIFI_CONNECTION_ERROR,
-  ADD_USER_WIFI_CONNECTION_REQUEST,
-  ADD_USER_WIFI_CONNECTION_SUCCESS,
-  ADD_USER_WIFI_CONNECTION_ERROR,
   GET_BOARD_PIN_OPTION_REQUEST,
   GET_BOARD_PIN_OPTION_SUCCESS,
   GET_BOARD_PIN_OPTION_ERROR,
   ADD_NEW_DEVICE_REQUEST,
   ADD_NEW_DEVICE_SUCCESS,
-  ADD_NEW_DEVICE_ERROR
+  ADD_NEW_DEVICE_ERROR,
+  GET_DEVICE_CHART_DATA_REQUEST,
+  GET_DEVICE_CHART_DATA_SUCCESS,
+  GET_DEVICE_CHART_DATA_ERROR,
+  GET_SENSOR_STATUS_REQUEST,
+  GET_SENSOR_STATUS_SUCCESS,
+  GET_SENSOR_STATUS_ERROR
 
 } from '../actions/gudang'
 
@@ -42,22 +36,51 @@ const state = {
   'userDeviceList': {},
   'supportedBoardList': {},
   'supportedSensorList': {},
-  'userWifiConnectionList': {},
-  'updateWifiConnectionStatus': '',
-  'removeWifiConnectionStatus': '',
-  'addWifiConnectionStatus': '',
-  'boardPinOption': {}
+  'boardPinOption': {},
+  'userDeviceChartData': {},
+  'sensorStatusData': {}
 }
 
 const getters = {
   getDeviceList: state => state.userDeviceList,
   getSupportedBoardList: state => state.supportedBoardList,
   getSupportedSensorList: state => state.supportedSensorList,
-  getUserWifiConnectionList: state => state.userWifiConnectionList,
-  getBoardPinOption: state => state.boardPinOption
+  getBoardPinOption: state => state.boardPinOption,
+  getUserDeviceChartData: state => state.userDeviceChartData,
+  getSensorStatusData: state => state.sensorStatusData
 }
 
 const actions = {
+  [GET_SENSOR_STATUS_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_SENSOR_STATUS_REQUEST)
+      const getSensorStatusEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/sensor/status/chart'
+      axios.get(getSensorStatusEndpoint)
+        .then(resp => {
+          commit(GET_SENSOR_STATUS_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_SENSOR_STATUS_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DEVICE_CHART_DATA_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_CHART_DATA_REQUEST)
+      const getDeviceChartDataEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/data/count/chart'
+      axios.get(getDeviceChartDataEndpoint)
+        .then(resp => {
+          commit(GET_DEVICE_CHART_DATA_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_CHART_DATA_ERROR)
+          reject(err)
+        })
+    })
+  },
   [ADD_NEW_DEVICE_REQUEST]: ({commit, dispatch}, newDevice) => {
     return new Promise((resolve, reject) => {
       commit(ADD_NEW_DEVICE_REQUEST)
@@ -69,77 +92,6 @@ const actions = {
         })
         .catch(err => {
           commit(ADD_NEW_DEVICE_ERROR)
-          reject(err)
-        })
-    })
-  },
-  [GET_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}) => {
-    return new Promise((resolve, reject) => {
-      commit(GET_USER_WIFI_CONNECTION_REQUEST)
-      const getuserWifiConnectionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/user/connection/wifi/list'
-      axios.get(getuserWifiConnectionEndpoint)
-        .then(resp => {
-          commit(GET_USER_WIFI_CONNECTION_SUCCESS, resp.data.data.wifi_connections)
-          resolve(resp)
-        })
-        .catch(err => {
-          commit(GET_USER_WIFI_CONNECTION_ERROR)
-          reject(err)
-        })
-    })
-  },
-  [ADD_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}, newWifiConnection) => {
-    return new Promise((resolve, reject) => {
-      commit(ADD_USER_WIFI_CONNECTION_REQUEST)
-      const addUserWifiConnectionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/user/connection/wifi/add'
-      const fd = new FormData()
-      fd.append('connection_name', newWifiConnection.connectionName)
-      fd.append('ssid', newWifiConnection.ssid)
-      fd.append('security_enabled', newWifiConnection.securityEnabled)
-      fd.append('password', newWifiConnection.password)
-      axios.post(addUserWifiConnectionEndpoint, fd)
-        .then(resp => {
-          commit(ADD_USER_WIFI_CONNECTION_SUCCESS)
-          resolve(resp)
-        })
-        .catch(err => {
-          commit(ADD_USER_WIFI_CONNECTION_ERROR)
-          reject(err)
-        })
-    })
-  },
-  [UPDATE_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}, wifiConnectionUpdate) => {
-    return new Promise((resolve, reject) => {
-      commit(UPDATE_USER_WIFI_CONNECTION_REQUEST)
-      const updateUserWifiConnectionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/user/connection/wifi/update'
-      const fd = new FormData()
-      fd.append('connection_name', wifiConnectionUpdate.connectionName)
-      fd.append('ssid', wifiConnectionUpdate.ssid)
-      fd.append('security_enabled', wifiConnectionUpdate.securityEnabled)
-      fd.append('password', wifiConnectionUpdate.password)
-      fd.append('user_wifi_connection_uuid', wifiConnectionUpdate.userWifiConnectionUUID)
-      axios.post(updateUserWifiConnectionEndpoint, fd)
-        .then(resp => {
-          commit(UPDATE_USER_WIFI_CONNECTION_SUCCESS)
-          resolve(resp)
-        })
-        .catch(err => {
-          commit(UPDATE_USER_WIFI_CONNECTION_ERROR)
-          reject(err)
-        })
-    })
-  },
-  [REMOVE_USER_WIFI_CONNECTION_REQUEST]: ({commit, dispatch}, userWifiConnectionUUID) => {
-    return new Promise((resolve, reject) => {
-      commit(REMOVE_USER_WIFI_CONNECTION_REQUEST)
-      const removeUserWifiConnectionEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/user/connection/wifi/remove/' + userWifiConnectionUUID
-      axios.get(removeUserWifiConnectionEndpoint)
-        .then(resp => {
-          commit(REMOVE_USER_WIFI_CONNECTION_SUCCESS)
-          resolve(resp)
-        })
-        .catch(err => {
-          commit(REMOVE_USER_WIFI_CONNECTION_ERROR)
           reject(err)
         })
     })
@@ -271,43 +223,6 @@ const mutations = {
   [GET_SUPPORTED_SENSOR_ERROR]: (state) => {
     state.status = 'error'
   },
-  [ADD_USER_WIFI_CONNECTION_REQUEST]: (state) => {
-    state.addWifiConnectionStatus = 'loading'
-  },
-  [ADD_USER_WIFI_CONNECTION_SUCCESS]: (state) => {
-    state.addWifiConnectionStatus = 'success'
-  },
-  [ADD_USER_WIFI_CONNECTION_ERROR]: (state) => {
-    state.addWifiConnectionStatus = 'error'
-  },
-  [GET_USER_WIFI_CONNECTION_REQUEST]: (state) => {
-    state.status = 'loading'
-  },
-  [GET_USER_WIFI_CONNECTION_SUCCESS]: (state, userWifiConnection) => {
-    state.status = 'success'
-    state.userWifiConnectionList = userWifiConnection
-  },
-  [GET_USER_WIFI_CONNECTION_ERROR]: (state) => {
-    state.status = 'error'
-  },
-  [UPDATE_USER_WIFI_CONNECTION_REQUEST]: (state) => {
-    state.updateWifiConnectionStatus = 'loading'
-  },
-  [UPDATE_USER_WIFI_CONNECTION_SUCCESS]: (state) => {
-    state.updateWifiConnectionStatus = 'success'
-  },
-  [UPDATE_USER_WIFI_CONNECTION_ERROR]: (state) => {
-    state.updateWifiConnectionStatus = 'error'
-  },
-  [REMOVE_USER_WIFI_CONNECTION_REQUEST]: (state) => {
-    state.removeWifiConnectionStatus = 'loading'
-  },
-  [REMOVE_USER_WIFI_CONNECTION_SUCCESS]: (state) => {
-    state.removeWifiConnectionStatus = 'success'
-  },
-  [REMOVE_USER_WIFI_CONNECTION_ERROR]: (state) => {
-    state.removeWifiConnectionStatus = 'error'
-  },
   [GET_BOARD_PIN_OPTION_REQUEST]: (state) => {
     state.status = 'loading'
   },
@@ -326,6 +241,26 @@ const mutations = {
   },
   [ADD_NEW_DEVICE_ERROR]: (state) => {
     state.addNewDeviceStatus = 'error'
+  },
+  [GET_DEVICE_CHART_DATA_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_CHART_DATA_SUCCESS]: (state, deviceChartData) => {
+    state.userDeviceChartData = deviceChartData
+    state.status = 'success'
+  },
+  [GET_DEVICE_CHART_DATA_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_SENSOR_STATUS_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_SENSOR_STATUS_SUCCESS]: (state, sensorStatusData) => {
+    state.sensorStatusData = sensorStatusData
+    state.status = 'success'
+  },
+  [GET_SENSOR_STATUS_ERROR]: (state) => {
+    state.status = 'error'
   }
 }
 
