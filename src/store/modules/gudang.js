@@ -22,7 +22,19 @@ import {
   GET_DEVICE_CHART_DATA_ERROR,
   GET_SENSOR_STATUS_REQUEST,
   GET_SENSOR_STATUS_SUCCESS,
-  GET_SENSOR_STATUS_ERROR
+  GET_SENSOR_STATUS_ERROR,
+  GET_USER_SIMPLE_DEVICE_LIST_REQUEST,
+  GET_USER_SIMPLE_DEVICE_LIST_SUCCESS,
+  GET_USER_SIMPLE_DEVICE_LIST_ERROR,
+  GET_DEVICE_MONTHLY_CHART_REQUEST,
+  GET_DEVICE_MONTHLY_CHART_SUCCESS,
+  GET_DEVICE_MONTHLY_CHART_ERROR,
+  GET_DEVICE_YEARLY_CHART_REQUEST,
+  GET_DEVICE_YEARLY_CHART_SUCCESS,
+  GET_DEVICE_YEARLY_CHART_ERROR,
+  GET_DEVICE_CUSTOM_CHART_REQUEST,
+  GET_DEVICE_CUSTOM_CHART_SUCCESS,
+  GET_DEVICE_CUSTOM_CHART_ERROR
 
 } from '../actions/gudang'
 
@@ -38,7 +50,9 @@ const state = {
   'supportedSensorList': {},
   'boardPinOption': {},
   'userDeviceChartData': {},
-  'sensorStatusData': {}
+  'sensorStatusData': {},
+  'userSimpleDeviceList': {},
+  'userDashboardChartData': {}
 }
 
 const getters = {
@@ -47,10 +61,290 @@ const getters = {
   getSupportedSensorList: state => state.supportedSensorList,
   getBoardPinOption: state => state.boardPinOption,
   getUserDeviceChartData: state => state.userDeviceChartData,
-  getSensorStatusData: state => state.sensorStatusData
+  getSensorStatusData: state => state.sensorStatusData,
+  getSimpleDeviceList: state => state.userSimpleDeviceList,
+  getUserDashboardChartData: state => state.userDashboardChartData
 }
 
 const actions = {
+  [GET_DEVICE_CUSTOM_CHART_REQUEST]: ({commit, dispatch}, requestData) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_YEARLY_CHART_REQUEST)
+      const getDeviceCustomStatisticEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/data/statistic?divider=' + requestData.divider + '&ft=' + requestData.fromTime + '&tt=' + requestData.toTime + '&device_uuid=' + requestData.deviceUUID
+      axios.get(getDeviceCustomStatisticEndpoint)
+        .then(resp => {
+          let deviceDashboardChartData = {}
+          let deviceStatisticData = resp.data.data
+          // Add the labels
+          let statisticLabels = []
+          // for (let i = 0; i < requestData.divider; i++) {
+          //   let label = ''
+          //   deviceStatisticData.device_data_statistics[i]
+          //   statisticLabels.push(i)
+          // }
+          // Take the label from the first sensor, as the rest will be the same
+          for (let i = 0; i < deviceStatisticData.device_data_statistics[0].statistic_values.length; i++) {
+            statisticLabels.push(deviceStatisticData.device_data_statistics[0].statistic_values[i].to_time)
+          }
+          deviceDashboardChartData['labels'] = statisticLabels
+          // Add options
+          deviceDashboardChartData['options'] = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+              display: true,
+              text: 'Device ' + deviceStatisticData.device_name + ' data for the last ' + requestData.divider + ' hour'
+            },
+            hover: {
+              mode: 'nearest',
+              intersect: true
+            },
+            tooltips: {
+              mode: 'index',
+              intersect: false
+            },
+            scales: {
+              xAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Time'
+                }
+              }],
+              yAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Sensor Value'
+                }
+              }]
+            }
+          }
+          // Add datasets
+          let datasets = []
+          // Iterate through the sensor
+          for (let i = 0; i < deviceStatisticData.total_user_sensor; i++) {
+            let dataset = {
+              fill: false,
+              borderColor: deviceStatisticData.random_material_colors[i],
+              backgroundColor: deviceStatisticData.random_material_colors[i],
+              label: deviceStatisticData.device_data_statistics[i].user_sensor_name + ' (' + deviceStatisticData.device_data_statistics[i].unit_name + ', ' + deviceStatisticData.device_data_statistics[i].unit_symbol + ')'
+            }
+            let data = []
+            for (let j = 0; j < deviceStatisticData.device_data_statistics[i].statistic_values.length; j++) {
+              data.push(deviceStatisticData.device_data_statistics[i].statistic_values[j].avg_sensor_value)
+            }
+            // Push it into dataset
+            dataset['data'] = data
+            // Push it into datasets
+            datasets.push(dataset)
+          }
+          // Add datasets into main object
+          deviceDashboardChartData['datasets'] = datasets
+          // Put it into the store
+          let chartData = {
+            userDashboardChartUUID: requestData.userDashboardChartUUID,
+            data: deviceDashboardChartData
+          }
+          commit(GET_DEVICE_CUSTOM_CHART_SUCCESS, chartData)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_CUSTOM_CHART_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DEVICE_YEARLY_CHART_REQUEST]: ({commit, dispatch}, requestData) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_YEARLY_CHART_REQUEST)
+      const getDeviceYearlyStatisticEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/data/statistic/yearly?year=' + requestData.year + '&device_uuid=' + requestData.deviceUUID
+      axios.get(getDeviceYearlyStatisticEndpoint)
+        .then(resp => {
+          let deviceDashboardChartData = {}
+          let deviceStatisticData = resp.data.data
+          // Add the labels
+          deviceDashboardChartData['labels'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+          // Add options
+          deviceDashboardChartData['options'] = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+              display: true,
+              text: 'Device ' + deviceStatisticData.device_name + ' Yearly data for ' + deviceStatisticData.year
+            },
+            hover: {
+              mode: 'nearest',
+              intersect: true
+            },
+            tooltips: {
+              mode: 'index',
+              intersect: false
+            },
+            scales: {
+              xAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Month'
+                }
+              }],
+              yAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Sensor Value'
+                }
+              }]
+            }
+          }
+          // Add datasets
+          let datasets = []
+          // Iterate through the sensor
+          for (let i = 0; i < deviceStatisticData.total_user_sensor; i++) {
+            let dataset = {
+              fill: false,
+              borderColor: deviceStatisticData.random_material_colors[i],
+              backgroundColor: deviceStatisticData.random_material_colors[i],
+              label: deviceStatisticData.device_data_statistics[i].user_sensor_name + ' (' + deviceStatisticData.device_data_statistics[i].unit_name + ', ' + deviceStatisticData.device_data_statistics[i].unit_symbol + ')'
+            }
+            let data = []
+            for (let j = 0; j < deviceStatisticData.device_data_statistics[i].statistic_values.length; j++) {
+              data.push(deviceStatisticData.device_data_statistics[i].statistic_values[j].avg_sensor_value)
+            }
+            // Push it into dataset
+            dataset['data'] = data
+            // Push it into datasets
+            datasets.push(dataset)
+          }
+          // Add datasets into main object
+          deviceDashboardChartData['datasets'] = datasets
+          // Put it into the store
+          let chartData = {
+            userDashboardChartUUID: requestData.userDashboardChartUUID,
+            data: deviceDashboardChartData
+          }
+          commit(GET_DEVICE_YEARLY_CHART_SUCCESS, chartData)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_YEARLY_CHART_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DEVICE_MONTHLY_CHART_REQUEST]: ({commit, dispatch}, requestData) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_MONTHLY_CHART_REQUEST)
+      const getDeviceMonthlyStatisticEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/data/statistic/monthly?year=' + requestData.year + '&month=' + requestData.month + '&device_uuid=' + requestData.deviceUUID
+      axios.get(getDeviceMonthlyStatisticEndpoint)
+        .then(resp => {
+          let deviceDashboardChartData = {}
+          let deviceStatisticData = resp.data.data
+          // Month name
+          const monthName = {
+            1: 'January',
+            2: 'February',
+            3: 'March',
+            4: 'April',
+            5: 'May',
+            6: 'June',
+            7: 'July',
+            8: 'August',
+            9: 'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'
+          }
+          // Add labels
+          let statisticLabels = []
+          for (let i = 1; i <= deviceStatisticData.total_days; i++) {
+            statisticLabels.push(i)
+          }
+          deviceDashboardChartData['labels'] = statisticLabels
+          // Add options
+          deviceDashboardChartData['options'] = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+              display: true,
+              text: 'Device ' + deviceStatisticData.device_name + ' Monthly data for ' + monthName[deviceStatisticData.month] + ' ' + deviceStatisticData.year
+            },
+            hover: {
+              mode: 'nearest',
+              intersect: true
+            },
+            tooltips: {
+              mode: 'index',
+              intersect: false
+            },
+            scales: {
+              xAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Day'
+                }
+              }],
+              yAxes: [{
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Sensor Value'
+                }
+              }]
+            }
+          }
+          // Add datasets
+          let datasets = []
+          // Iterate through the sensor
+          for (let i = 0; i < deviceStatisticData.total_user_sensor; i++) {
+            let dataset = {
+              fill: false,
+              borderColor: deviceStatisticData.random_material_colors[i],
+              backgroundColor: deviceStatisticData.random_material_colors[i],
+              label: deviceStatisticData.device_data_statistics[i].user_sensor_name + ' (' + deviceStatisticData.device_data_statistics[i].unit_name + ', ' + deviceStatisticData.device_data_statistics[i].unit_symbol + ')'
+            }
+            let data = []
+            for (let j = 0; j < deviceStatisticData.device_data_statistics[i].statistic_values.length; j++) {
+              data.push(deviceStatisticData.device_data_statistics[i].statistic_values[j].avg_sensor_value)
+            }
+            // Push it into dataset
+            dataset['data'] = data
+            // Push it into datasets
+            datasets.push(dataset)
+          }
+          // Add datasets into main object
+          deviceDashboardChartData['datasets'] = datasets
+          // Put it into the store
+          let chartData = {
+            userDashboardChartUUID: requestData.userDashboardChartUUID,
+            data: deviceDashboardChartData
+          }
+          commit(GET_DEVICE_MONTHLY_CHART_SUCCESS, chartData)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_MONTHLY_CHART_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_USER_SIMPLE_DEVICE_LIST_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_USER_SIMPLE_DEVICE_LIST_REQUEST)
+      const getSimpleDeviceListEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/list/simple'
+      axios.get(getSimpleDeviceListEndpoint)
+        .then(resp => {
+          commit(GET_USER_SIMPLE_DEVICE_LIST_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_USER_SIMPLE_DEVICE_LIST_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_SENSOR_STATUS_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(GET_SENSOR_STATUS_REQUEST)
@@ -260,6 +554,46 @@ const mutations = {
     state.status = 'success'
   },
   [GET_SENSOR_STATUS_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_USER_SIMPLE_DEVICE_LIST_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_USER_SIMPLE_DEVICE_LIST_SUCCESS]: (state, simpleDeviceList) => {
+    state.status = 'success'
+    state.userSimpleDeviceList = simpleDeviceList
+  },
+  [GET_USER_SIMPLE_DEVICE_LIST_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DEVICE_MONTHLY_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_MONTHLY_CHART_SUCCESS]: (state, chartData) => {
+    state.status = 'success'
+    state.userDashboardChartData[chartData.userDashboardChartUUID] = chartData.data
+  },
+  [GET_DEVICE_MONTHLY_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DEVICE_YEARLY_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_YEARLY_CHART_SUCCESS]: (state, chartData) => {
+    state.status = 'success'
+    state.userDashboardChartData[chartData.userDashboardChartUUID] = chartData.data
+  },
+  [GET_DEVICE_YEARLY_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DEVICE_CUSTOM_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_CUSTOM_CHART_SUCCESS]: (state, chartData) => {
+    state.status = 'success'
+    state.userDashboardChartData[chartData.userDashboardChartUUID] = chartData.data
+  },
+  [GET_DEVICE_CUSTOM_CHART_ERROR]: (state) => {
     state.status = 'error'
   }
 }

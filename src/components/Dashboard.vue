@@ -17,7 +17,13 @@
       <v-container fluid grid-list-lg>
         <v-layout row>
           <!--Device Sensor Status-->
-          <v-flex xs3>
+          <v-flex v-if="!deviceStatusChartLoaded" xs9 class="text-xs-center">
+            <!--Loading card-->
+            <v-card>
+              <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
+            </v-card>
+          </v-flex>
+          <v-flex xs3 v-if="deviceStatusChartLoaded">
             <v-card hover height="300">
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Sensor Status</span>
@@ -26,7 +32,13 @@
             </v-card>
           </v-flex>
           <!--Device total data-->
-          <v-flex xs9>
+          <v-flex v-if="!deviceChartLoaded" xs9 class="text-xs-center">
+            <!--Loading card-->
+            <v-card>
+              <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
+            </v-card>
+          </v-flex>
+          <v-flex xs9 v-if="deviceChartLoaded">
             <v-card hover height="300">
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Data Count</span>
@@ -36,13 +48,21 @@
           </v-flex>
         </v-layout>
         <!--User added chart-->
-        <v-layout row wrap>
-          <v-flex xs6>
+          <v-layout row wrap align-center v-if="!userChartLoaded">
+            <!--Loading card-->
+            <v-flex class="text-xs-center">
+              <v-card>
+                <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
+              </v-card>
+            </v-flex>
+          </v-layout>
+        <v-layout row wrap v-if="userChartLoaded">
+          <v-flex xs6
+                  v-for="(deviceChart) in userDeviceChart"
+                  :key="deviceChart.user_dashboard_chart_uuid"
+          >
             <v-card hover height="350">
-              <v-card-title>
-                <span class="title mb-0 primary--text">Tes line mantap</span>
-              </v-card-title>
-              <line-chart :height="290" v-if="datacollection" :chart-data="datacollection" :options=datacollection.options />
+              <line-chart :height="350" :chart-data="userDashboardChartData[deviceChart.user_dashboard_chart_uuid]" :options=userDashboardChartData[deviceChart.user_dashboard_chart_uuid].options />
             </v-card>
           </v-flex>
         </v-layout>
@@ -58,11 +78,88 @@
           right
           color="teal"
           slot="activator"
+          @click="openAddDeviceChartDialog"
         >
           <v-icon>add</v-icon>
         </v-btn>
         <span>Add new chart</span>
       </v-tooltip>
+      <!--Add new chart dialog-->
+      <v-dialog v-model="addNewChartDialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Add new device chart</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container grid-list-md>
+              <v-select
+                :items="userSimpleDeviceList"
+                v-model="selectedDevice"
+                label="Choose your device"
+                class="input-group--focused"
+                item-text="device_name"
+                item-value="device_uuid"
+                prepend-icon="fa-microchip"
+                :loading="simpleDeviceListLoading"
+                autocomplete
+                :rules="[() => !!selectedDevice || 'Please select your device']"
+                required
+              ></v-select>
+              <v-layout wrap>
+                <v-flex xs12 sm6 md6>
+                  <v-select
+                    :items="chartTypeList"
+                    v-model="selectedChartType"
+                    label="Choose chart range"
+                    class="input-group--focused"
+                    item-text="text"
+                    item-value="value"
+                    prepend-icon="fa-calendar-alt"
+                    autocomplete
+                    :rules="[() => !!selectedChartType || 'Please select the chart type']"
+                    required
+                  ></v-select>
+                </v-flex>
+                <v-flex xs12 sm6 md6>
+                  <span><strong>This Month</strong> chart will give you current month statistic for selected device (Daily),
+                    <strong>This Year</strong> chart will give you current year statistic for selected device (Monthly),
+                  <strong>Custom range</strong> chart will give you statistic based on last N hour range, it can be set <strong>from 1 hour to 168 hour</strong></span>
+                </v-flex>
+              </v-layout>
+              <v-layout wrap v-if="selectedChartType == '2'">
+                <v-flex xs9>
+                  <v-slider
+                    :min="1"
+                    :max="168"
+                    v-model="customChartTimeRange"
+                    label="Range(Hour)"
+                    :rules="[() => !!customChartTimeRange || 'Please add hour range for the chart ',() => customChartTimeRange <= 168 || 'Hour range cannot be more than the last 168 hours', () => customChartTimeRange >= 1 || 'Hour range cannot be less than the last 1 hour']"
+                  >
+                  </v-slider>
+                </v-flex>
+                <v-flex xs3>
+                  <v-text-field v-model="customChartTimeRange" type="number"></v-text-field>
+                </v-flex>
+              </v-layout>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" flat @click.native="closeAddDeviceChartDialog">Cancel</v-btn>
+            <v-btn class="white--text" color="blue darken-1" :disabled="!addNewChartFormValid" @click.native="onAddNewDeviceDashboardChart">Add</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <!--Snack bar-->
+      <v-snackbar
+        :timeout="addDeviceChartSnackTimeout"
+        :color="addDeviceChartSnackColor"
+        v-model="addDeviceChartSnack"
+        :multi-line="true"
+      >
+        {{ addDeviceChartSnackMessage }}
+        <v-btn dark flat @click.native="addDeviceChartSnack = false">Close</v-btn>
+      </v-snackbar>
     </v-flex>
   </v-layout>
 </template>
@@ -72,24 +169,43 @@
   import DoughnutChart from '@/components/charts/DoughnutChart'
   import BarChart from '@/components/charts/BarChart'
   import PieChart from '@/components/charts/PieChart'
-  import {GET_DEVICE_CHART_DATA_REQUEST, GET_SENSOR_STATUS_REQUEST} from '../store/actions/gudang'
+  import {GET_DEVICE_CHART_DATA_REQUEST, GET_SENSOR_STATUS_REQUEST, GET_USER_SIMPLE_DEVICE_LIST_REQUEST, GET_DEVICE_MONTHLY_CHART_REQUEST, GET_DEVICE_YEARLY_CHART_REQUEST, GET_DEVICE_CUSTOM_CHART_REQUEST} from '../store/actions/gudang'
+  import {GET_DEVICE_DASHBOARD_CHART_REQUEST, ADD_DEVICE_DASHBOARD_CHART_REQUEST} from '../store/actions/lemari'
 
   export default {
     components: {PieChart, BarChart, LineChart, DoughnutChart},
     data: () => ({
+      // Add new device chart
+      // Defaulting to 1 hour
+      userChartLoaded: false,
+      deviceChartLoaded: false,
+      deviceStatusChartLoaded: false,
+      customChartTimeRange: 1,
+      selectedDevice: '',
+      selectedChartType: '',
+      chartTypeList: [
+        { text: 'This Month', value: '0' },
+        { text: 'This Year', value: '1' },
+        { text: 'Custom Range', value: '2' }
+      ],
+      addNewChartDialog: false,
+      simpleDeviceListLoading: true,
+      // User chart
+      userDeviceChart: '',
+      userDashboardChartData: {},
       datacollection: {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+        labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
         datasets: [
           {
             label: 'Sensor One',
-            data: [40, 20, 12, 100, 133, 33],
+            data: [40, null, 12, 100, 133, 33, null, 112, 88, 12, null, 77],
             fill: false,
             borderColor: '#f87979',
             backgroundColor: '#f87979'
           },
           {
             label: 'Sensor Two',
-            data: [33, 121, 99, 10, 56, 27],
+            data: [33, 121, 99, null, 56, 27, null, 14, 99, 43, 12, null],
             fill: false,
             borderColor: '#819ff8',
             backgroundColor: '#819ff8'
@@ -127,35 +243,186 @@
             }]
           }
         }
-      }
+      },
+      // Snackbar
+      addDeviceChartSnackMessage: '',
+      addDeviceChartSnackColor: '',
+      addDeviceChartSnack: false,
+      addDeviceChartSnackTimeout: 6000
     }),
     methods: {
-      loadDeviceChartData: async function () {
+      generateSnack: function (message, color) {
+        this.addDeviceChartSnackMessage = message
+        this.addDeviceChartSnackColor = color
+        this.addDeviceChartSnack = true
+      },
+      onAddNewDeviceDashboardChart: function () {
+        // Close the dialog
+        this.addNewChartDialog = false
         try {
-          this.$store.dispatch(GET_DEVICE_CHART_DATA_REQUEST)
+          let newDeviceDashboardData = {
+            device_uuid: this.selectedDevice,
+            statistic_type: this.selectedChartType,
+            n_last_hour: this.customChartTimeRange
+          }
+          this.$store.dispatch(ADD_DEVICE_DASHBOARD_CHART_REQUEST, newDeviceDashboardData)
+            .then((resp) => {
+              this.generateSnack(resp.data.success.message, 'success')
+              // Reload user added chart
+              this.userChartLoaded = false
+              // Reload the user added chart
+              this.loadDeviceDashboardChartData()
+            })
+            .catch((err) => {
+              this.generateSnack(err.response.data.error.message, 'error')
+            })
         } catch (error) {
           // Display client error
           console.error(error)
         }
       },
+      loadUserSimpleDeviceList: async function () {
+        try {
+          this.simpleDeviceListLoading = true
+          this.$store.dispatch(GET_USER_SIMPLE_DEVICE_LIST_REQUEST)
+            .then(resp => {
+              this.simpleDeviceListLoading = false
+            })
+        } catch (error) {
+          // Display client error
+          console.error(error)
+        }
+      },
+      openAddDeviceChartDialog: function () {
+        this.addNewChartDialog = true
+        this.loadUserSimpleDeviceList()
+      },
+      closeAddDeviceChartDialog: function () {
+        this.addNewChartDialog = false
+      },
+      loadDeviceChartData: async function () {
+        try {
+          this.deviceChartLoaded = false
+          this.$store.dispatch(GET_DEVICE_CHART_DATA_REQUEST)
+            .then((resp) => {
+              this.deviceChartLoaded = true
+            })
+        } catch (error) {
+          // Display client error
+          console.error(error)
+        }
+      },
+      loadDeviceDashboardChartData: async function () {
+        try {
+          this.$store.dispatch(GET_DEVICE_DASHBOARD_CHART_REQUEST)
+            .then((resp) => {
+              // Pre push it so it can be used for chart iterations
+              this.userDeviceChart = resp.data.data.device_dashboard_charts
+              // This thing need to be initiate first, somehow
+              // Load the chart data
+              for (let i = 0; i < this.$store.getters.getuserDeviceDashboardChart.device_dashboard_chart_count; i++) {
+                if (this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].statistic_type === '0') {
+                  // Monthly
+                  let currentDate = new Date()
+                  let requestData = {
+                    year: currentDate.getFullYear(),
+                    month: currentDate.getMonth() + 1,
+                    deviceUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].device_uuid,
+                    userDashboardChartUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].user_dashboard_chart_uuid
+                  }
+                  // Execute the request
+                  this.$store.dispatch(GET_DEVICE_MONTHLY_CHART_REQUEST, requestData)
+                    .then(resp => {
+                      // Use temp variable to pass the value
+                      // Altering the object directly won't work
+                      let tempData = JSON.parse(JSON.stringify(this.userDashboardChartData))
+                      tempData[requestData.userDashboardChartUUID] = this.$store.getters.getUserDashboardChartData[requestData.userDashboardChartUUID]
+                      this.userDashboardChartData = tempData
+                    })
+                } else if (this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].statistic_type === '1') {
+                  // Yearly
+                  let currentDate = new Date()
+                  let requestData = {
+                    year: currentDate.getFullYear(),
+                    deviceUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].device_uuid,
+                    userDashboardChartUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].user_dashboard_chart_uuid
+                  }
+                  // Execute the request
+                  this.$store.dispatch(GET_DEVICE_YEARLY_CHART_REQUEST, requestData)
+                    .then(resp => {
+                      // Use temp variable to pass the value
+                      // Altering the object directly won't work
+                      let tempData = JSON.parse(JSON.stringify(this.userDashboardChartData))
+                      tempData[requestData.userDashboardChartUUID] = this.$store.getters.getUserDashboardChartData[requestData.userDashboardChartUUID]
+                      this.userDashboardChartData = tempData
+                    })
+                } else if (this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].statistic_type === '2') {
+                  // Custom range
+                  let currentDate = new Date()
+                  let fromDate = new Date()
+                  console.log(currentDate.setHours(currentDate.getHours() - this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour) / 1000)
+                  console.log(currentDate.getTime() / 1000)
+                  let requestData = {
+                    divider: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour,
+                    fromTime: currentDate.setHours(currentDate.getHours() - this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour) / 1000,
+                    toTime: fromDate.getTime() / 1000,
+                    deviceUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].device_uuid,
+                    userDashboardChartUUID: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].user_dashboard_chart_uuid
+                  }
+                  // console.log(requestData.fromTime)
+                  // console.log(requestData.toTime)
+                  // Execute the request
+                  this.$store.dispatch(GET_DEVICE_CUSTOM_CHART_REQUEST, requestData)
+                    .then(resp => {
+                      // Use temp variable to pass the value
+                      // Altering the object directly won't work
+                      let tempData = JSON.parse(JSON.stringify(this.userDashboardChartData))
+                      tempData[requestData.userDashboardChartUUID] = this.$store.getters.getUserDashboardChartData[requestData.userDashboardChartUUID]
+                      this.userDashboardChartData = tempData
+                    })
+                }
+              }
+              this.userChartLoaded = true
+            })
+        } catch (error) {
+          console.log(error)
+        }
+      },
       loadSensorStatusData: async function () {
         try {
+          this.deviceStatusChartLoaded = false
           this.$store.dispatch(GET_SENSOR_STATUS_REQUEST)
+            .then((resp) => {
+              this.deviceStatusChartLoaded = true
+            })
         } catch (e) {
           // Display client error
           console.error(e)
         }
       },
-      reloadDashboardData: function () {
+      reloadDashboardData: async function () {
         this.loadDeviceChartData()
         this.loadSensorStatusData()
+        // Refresh the user added chart
+        this.deviceChartLoaded = false
+        this.deviceStatusChartLoaded = false
+        this.userChartLoaded = false
+        // Reload the user added chart
+        this.loadDeviceDashboardChartData()
       }
     },
-    beforeMount: function () {
+    beforeMount: async function () {
       this.loadDeviceChartData()
       this.loadSensorStatusData()
+      this.loadDeviceDashboardChartData()
     },
     computed: {
+      addNewChartFormValid: function () {
+        return this.selectedChartType && this.selectedDevice && this.customChartTimeRange
+      },
+      userSimpleDeviceList: function () {
+        return this.$store.getters.getSimpleDeviceList.user_devices
+      },
       deviceDataCountChartData: function () {
         return {
           labels: this.$store.getters.getUserDeviceChartData.device_names,

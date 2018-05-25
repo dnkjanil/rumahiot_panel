@@ -48,7 +48,7 @@ const getters = {
   getProfile: state => state.userProfile,
   isProfileLoaded: state => !!state.status,
   getUserWifiConnectionList: state => state.userWifiConnectionList,
-  getuserDeviceDashboardChart: state => state.userWifiConnectionList
+  getuserDeviceDashboardChart: state => state.userDeviceDashboardChart
 }
 
 const actions = {
@@ -276,6 +276,34 @@ const mutations = {
   },
   [REMOVE_USER_WIFI_CONNECTION_ERROR]: (state) => {
     state.removeWifiConnectionStatus = 'error'
+  },
+  [GET_DEVICE_DASHBOARD_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_DASHBOARD_CHART_SUCCESS]: (state, userDeviceDashboardChart) => {
+    state.status = 'success'
+    state.userDeviceDashboardChart = userDeviceDashboardChart
+  },
+  [GET_DEVICE_DASHBOARD_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [ADD_DEVICE_DASHBOARD_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ADD_DEVICE_DASHBOARD_CHART_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [ADD_DEVICE_DASHBOARD_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [REMOVE_DEVICE_DASHBOARD_CHART_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [REMOVE_DEVICE_DASHBOARD_CHART_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [REMOVE_DEVICE_DASHBOARD_CHART_ERROR]: (state) => {
+    state.status = 'error'
   }
 }
 
