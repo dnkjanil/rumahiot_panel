@@ -34,7 +34,13 @@ import {
   GET_DEVICE_YEARLY_CHART_ERROR,
   GET_DEVICE_CUSTOM_CHART_REQUEST,
   GET_DEVICE_CUSTOM_CHART_SUCCESS,
-  GET_DEVICE_CUSTOM_CHART_ERROR
+  GET_DEVICE_CUSTOM_CHART_ERROR,
+  GET_TIMEZONES_REQUEST,
+  GET_TIMEZONES_SUCCESS,
+  GET_TIMEZONES_ERROR,
+  ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST,
+  ADD_NEW_DEVICE_EXPORTED_DATA_SUCCESS,
+  ADD_NEW_DEVICE_EXPORTED_DATA_ERROR
 
 } from '../actions/gudang'
 
@@ -52,7 +58,8 @@ const state = {
   'userDeviceChartData': {},
   'sensorStatusData': {},
   'userSimpleDeviceList': {},
-  'userDashboardChartData': {}
+  'userDashboardChartData': {},
+  'timezoneList': {}
 }
 
 const getters = {
@@ -63,10 +70,46 @@ const getters = {
   getUserDeviceChartData: state => state.userDeviceChartData,
   getSensorStatusData: state => state.sensorStatusData,
   getSimpleDeviceList: state => state.userSimpleDeviceList,
-  getUserDashboardChartData: state => state.userDashboardChartData
+  getUserDashboardChartData: state => state.userDashboardChartData,
+  getTimezoneList: state => state.timezoneList
 }
 
 const actions = {
+  [ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST]: ({commit, dispatch}, requestData) => {
+    return new Promise((resolve, reject) => {
+      commit(ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST)
+      const addNewDeviceExportedDataEndpoint = 'https://gudang.rumahiot.panjatdigital.com/store/exported/device/data/xlsx/new'
+      const fd = new FormData()
+      fd.append('device_uuid', requestData.deviceUUID)
+      fd.append('from_time', requestData.fromTime)
+      fd.append('to_time', requestData.toTime)
+      fd.append('time_zone', requestData.timezone)
+      axios.post(addNewDeviceExportedDataEndpoint, fd)
+        .then(resp => {
+          commit(ADD_NEW_DEVICE_EXPORTED_DATA_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(ADD_NEW_DEVICE_EXPORTED_DATA_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_TIMEZONES_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_USER_SIMPLE_DEVICE_LIST_REQUEST)
+      const getTimezoneListEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/timezone/list'
+      axios.get(getTimezoneListEndpoint)
+        .then(resp => {
+          commit(GET_TIMEZONES_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_TIMEZONES_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_DEVICE_CUSTOM_CHART_REQUEST]: ({commit, dispatch}, requestData) => {
     return new Promise((resolve, reject) => {
       commit(GET_DEVICE_YEARLY_CHART_REQUEST)
@@ -84,7 +127,8 @@ const actions = {
           // }
           // Take the label from the first sensor, as the rest will be the same
           for (let i = 0; i < deviceStatisticData.device_data_statistics[0].statistic_values.length; i++) {
-            statisticLabels.push(deviceStatisticData.device_data_statistics[0].statistic_values[i].to_time)
+            let date = new Date(deviceStatisticData.device_data_statistics[0].statistic_values[i].to_time * 1000)
+            statisticLabels.push(('0' + date.getDate()).slice(-2) + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + date.getFullYear() + ' ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2))
           }
           deviceDashboardChartData['labels'] = statisticLabels
           // Add options
@@ -93,7 +137,7 @@ const actions = {
             maintainAspectRatio: false,
             title: {
               display: true,
-              text: 'Device ' + deviceStatisticData.device_name + ' data for the last ' + requestData.divider + ' hour'
+              text: 'Device ' + deviceStatisticData.device_name + ' average data for the last ' + requestData.divider + ' hour'
             },
             hover: {
               mode: 'nearest',
@@ -105,7 +149,7 @@ const actions = {
             },
             scales: {
               xAxes: [{
-                display: true,
+                display: false,
                 scaleLabel: {
                   display: true,
                   labelString: 'Time'
@@ -164,14 +208,14 @@ const actions = {
           let deviceDashboardChartData = {}
           let deviceStatisticData = resp.data.data
           // Add the labels
-          deviceDashboardChartData['labels'] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+          deviceDashboardChartData['labels'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
           // Add options
           deviceDashboardChartData['options'] = {
             responsive: true,
             maintainAspectRatio: false,
             title: {
               display: true,
-              text: 'Device ' + deviceStatisticData.device_name + ' Yearly data for ' + deviceStatisticData.year
+              text: 'Device ' + deviceStatisticData.device_name + ' average yearly data for ' + deviceStatisticData.year
             },
             hover: {
               mode: 'nearest',
@@ -268,7 +312,7 @@ const actions = {
             maintainAspectRatio: false,
             title: {
               display: true,
-              text: 'Device ' + deviceStatisticData.device_name + ' Monthly data for ' + monthName[deviceStatisticData.month] + ' ' + deviceStatisticData.year
+              text: 'Device ' + deviceStatisticData.device_name + ' Average monthly data for ' + monthName[deviceStatisticData.month] + ' ' + deviceStatisticData.year
             },
             hover: {
               mode: 'nearest',
@@ -594,6 +638,25 @@ const mutations = {
     state.userDashboardChartData[chartData.userDashboardChartUUID] = chartData.data
   },
   [GET_DEVICE_CUSTOM_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_TIMEZONES_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_TIMEZONES_SUCCESS]: (state, timezoneData) => {
+    state.status = 'success'
+    state.timezoneList = timezoneData
+  },
+  [GET_TIMEZONES_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ADD_NEW_DEVICE_EXPORTED_DATA_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [ADD_NEW_DEVICE_EXPORTED_DATA_ERROR]: (state) => {
     state.status = 'error'
   }
 }

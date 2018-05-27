@@ -27,7 +27,10 @@ import {
   ADD_DEVICE_DASHBOARD_CHART_ERROR,
   REMOVE_DEVICE_DASHBOARD_CHART_REQUEST,
   REMOVE_DEVICE_DASHBOARD_CHART_SUCCESS,
-  REMOVE_DEVICE_DASHBOARD_CHART_ERROR
+  REMOVE_DEVICE_DASHBOARD_CHART_ERROR,
+  GET_DEVICE_EXPORTED_XLSX_REQUEST,
+  GET_DEVICE_EXPORTED_XLSX_SUCCESS,
+  GET_DEVICE_EXPORTED_XLSX_ERROR
 
 } from '../actions/lemari'
 import {AUTH_SIGNOUT} from '../actions/sidik'
@@ -41,17 +44,34 @@ const state = {
   'updateWifiConnectionStatus': '',
   'removeWifiConnectionStatus': '',
   'addWifiConnectionStatus': '',
-  'userDeviceDashboardChart': {}
+  'userDeviceDashboardChart': {},
+  'deviceExportedXlsxList': {}
 }
 
 const getters = {
   getProfile: state => state.userProfile,
   isProfileLoaded: state => !!state.status,
   getUserWifiConnectionList: state => state.userWifiConnectionList,
-  getuserDeviceDashboardChart: state => state.userDeviceDashboardChart
+  getuserDeviceDashboardChart: state => state.userDeviceDashboardChart,
+  getDeviceExportedXlsxList: state => state.deviceExportedXlsxList
 }
 
 const actions = {
+  [GET_DEVICE_EXPORTED_XLSX_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_EXPORTED_XLSX_REQUEST)
+      const getDeviceExportedXlsxEndpoint = 'https://lemari.rumahiot.panjatdigital.com/exported/device/xlsx/list'
+      axios.get(getDeviceExportedXlsxEndpoint)
+        .then(resp => {
+          commit(GET_DEVICE_EXPORTED_XLSX_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_EXPORTED_XLSX_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_DEVICE_DASHBOARD_CHART_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(GET_DEVICE_DASHBOARD_CHART_REQUEST)
@@ -303,6 +323,16 @@ const mutations = {
     state.status = 'success'
   },
   [REMOVE_DEVICE_DASHBOARD_CHART_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DEVICE_EXPORTED_XLSX_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_EXPORTED_XLSX_SUCCESS]: (state, deviceExportedXlsxList) => {
+    state.status = 'success'
+    state.deviceExportedXlsxList = deviceExportedXlsxList
+  },
+  [GET_DEVICE_EXPORTED_XLSX_ERROR]: (state) => {
     state.status = 'error'
   }
 }

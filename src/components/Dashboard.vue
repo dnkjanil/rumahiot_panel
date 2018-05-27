@@ -56,15 +56,28 @@
               </v-card>
             </v-flex>
           </v-layout>
+        <!--Todo : Make sure userDashboardChartData[deviceChart.user_dashboard_chart_uuid] available before calling it-->
         <v-layout row wrap v-if="userChartLoaded">
-          <v-flex xs6
-                  v-for="(deviceChart) in userDeviceChart"
-                  :key="deviceChart.user_dashboard_chart_uuid"
-          >
-            <v-card hover height="350">
-              <line-chart :height="350" :chart-data="userDashboardChartData[deviceChart.user_dashboard_chart_uuid]" :options=userDashboardChartData[deviceChart.user_dashboard_chart_uuid].options />
-            </v-card>
-          </v-flex>
+          <template v-for="(deviceChart) in userDeviceChart">
+            <v-flex xs6
+                    :key="deviceChart.user_dashboard_chart_uuid"
+            >
+              <v-card hover height="380">
+                <line-chart :height="330" :chart-data="userDashboardChartData[deviceChart.user_dashboard_chart_uuid]" :options=userDashboardChartData[deviceChart.user_dashboard_chart_uuid].options />
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-tooltip left>
+                    <v-btn icon @click="onRemoveDeviceDashboardChart(deviceChart.user_dashboard_chart_uuid)" slot="activator">
+                      <v-icon color="red">
+                        delete
+                      </v-icon>
+                    </v-btn>
+                    <span>Remove chart</span>
+                  </v-tooltip>
+                </v-card-actions>
+              </v-card>
+            </v-flex>
+          </template>
         </v-layout>
       </v-container>
       <!--Add new device button-->
@@ -170,7 +183,7 @@
   import BarChart from '@/components/charts/BarChart'
   import PieChart from '@/components/charts/PieChart'
   import {GET_DEVICE_CHART_DATA_REQUEST, GET_SENSOR_STATUS_REQUEST, GET_USER_SIMPLE_DEVICE_LIST_REQUEST, GET_DEVICE_MONTHLY_CHART_REQUEST, GET_DEVICE_YEARLY_CHART_REQUEST, GET_DEVICE_CUSTOM_CHART_REQUEST} from '../store/actions/gudang'
-  import {GET_DEVICE_DASHBOARD_CHART_REQUEST, ADD_DEVICE_DASHBOARD_CHART_REQUEST} from '../store/actions/lemari'
+  import {GET_DEVICE_DASHBOARD_CHART_REQUEST, ADD_DEVICE_DASHBOARD_CHART_REQUEST, REMOVE_DEVICE_DASHBOARD_CHART_REQUEST} from '../store/actions/lemari'
 
   export default {
     components: {PieChart, BarChart, LineChart, DoughnutChart},
@@ -193,57 +206,6 @@
       // User chart
       userDeviceChart: '',
       userDashboardChartData: {},
-      datacollection: {
-        labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'],
-        datasets: [
-          {
-            label: 'Sensor One',
-            data: [40, null, 12, 100, 133, 33, null, 112, 88, 12, null, 77],
-            fill: false,
-            borderColor: '#f87979',
-            backgroundColor: '#f87979'
-          },
-          {
-            label: 'Sensor Two',
-            data: [33, 121, 99, null, 56, 27, null, 14, 99, 43, 12, null],
-            fill: false,
-            borderColor: '#819ff8',
-            backgroundColor: '#819ff8'
-          }
-        ],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          title: {
-            display: true,
-            text: 'Yearly data for 2018'
-          },
-          hover: {
-            mode: 'nearest',
-            intersect: true
-          },
-          tooltips: {
-            mode: 'index',
-            intersect: false
-          },
-          scales: {
-            xAxes: [{
-              display: true,
-              scaleLabel: {
-                display: true,
-                labelString: 'Month'
-              }
-            }],
-            yAxes: [{
-              display: true,
-              scaleLabel: {
-                display: true,
-                labelString: 'Sensor Value'
-              }
-            }]
-          }
-        }
-      },
       // Snackbar
       addDeviceChartSnackMessage: '',
       addDeviceChartSnackColor: '',
@@ -256,7 +218,24 @@
         this.addDeviceChartSnackColor = color
         this.addDeviceChartSnack = true
       },
-      onAddNewDeviceDashboardChart: function () {
+      onRemoveDeviceDashboardChart: async function (dashboardChartUUID) {
+        if (confirm('Remove chart ?')) {
+          try {
+            this.$store.dispatch(REMOVE_DEVICE_DASHBOARD_CHART_REQUEST, dashboardChartUUID)
+              .then((resp) => {
+                this.generateSnack(resp.data.success.message, 'success')
+                this.reloadDashboardData()
+              })
+              .catch((err) => {
+                this.generateSnack(err.response.data.error.message, 'error')
+              })
+          } catch (error) {
+            // Display client error
+            console.error(error)
+          }
+        }
+      },
+      onAddNewDeviceDashboardChart: async function () {
         // Close the dialog
         this.addNewChartDialog = false
         try {
@@ -408,6 +387,7 @@
         this.deviceStatusChartLoaded = false
         this.userChartLoaded = false
         // Reload the user added chart
+        this.userDashboardChartData = {}
         this.loadDeviceDashboardChartData()
       }
     },
