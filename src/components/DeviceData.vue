@@ -68,7 +68,7 @@
               </v-card-title>
               <v-card-text>
                 <v-container grid-list-md>
-                  <v-flex xs6>
+                  <v-flex xs12 md6>
                     <v-select
                       :items="userSimpleDeviceList"
                       v-model="selectedDevice"
@@ -83,18 +83,18 @@
                     ></v-select>
                   </v-flex>
                   <v-layout row wrap>
-                    <v-flex xs6>
+                    <v-flex xs12 md4>
                       <span class="primary--text title mb-1">From Date</span>
-                      <v-date-picker color="purple" v-model="selectedFromDate" landscape></v-date-picker>
+                      <v-date-picker color="purple" v-model="selectedFromDate" ></v-date-picker>
                     </v-flex>
-                    <v-flex xs6>
+                    <v-flex xs12 md4>
                       <span class="primary--text title mb-1">To Date</span>
-                      <v-date-picker color="pink" v-model="selectedToDate" landscape></v-date-picker>
+                      <v-date-picker color="pink" v-model="selectedToDate" ></v-date-picker>
                     </v-flex>
                   </v-layout>
                   <br>
                   <v-layout row wrap>
-                    <v-flex xs6>
+                    <v-flex xs12 md6>
                       <v-select
                         :items="timezoneList"
                         v-model="selectedTimezone"
@@ -108,7 +108,7 @@
                         required
                       ></v-select>
                     </v-flex>
-                    <v-flex xs6>
+                    <v-flex xs12 md6>
                       <span>Choose the timezone to <strong>represent the data in exported document</strong> to make sure the data time match with your desired timezone.</span>
                     </v-flex>
                   </v-layout>

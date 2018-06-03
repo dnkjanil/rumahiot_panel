@@ -15,35 +15,35 @@
         </v-card-title>
       </v-card>
       <v-container fluid grid-list-lg>
-        <v-layout row>
+        <v-layout row wrap>
           <!--Device Sensor Status-->
-          <v-flex v-if="!deviceStatusChartLoaded" xs9 class="text-xs-center">
+          <v-flex v-if="!deviceStatusChartLoaded" md3 sm12 class="text-xs-center">
             <!--Loading card-->
             <v-card>
               <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
             </v-card>
           </v-flex>
-          <v-flex xs3 v-if="deviceStatusChartLoaded">
+          <v-flex md3 xs12 v-if="deviceStatusChartLoaded">
             <v-card hover height="300">
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Sensor Status</span>
               </v-card-title>
-              <pie-chart :chart-data="sensorStatusChartData"/>
+              <pie-chart width="100%" height="240px" position="relative" :chart-data="sensorStatusChartData" :options="sensorStatusChartData.options"/>
             </v-card>
           </v-flex>
           <!--Device total data-->
-          <v-flex v-if="!deviceChartLoaded" xs9 class="text-xs-center">
+          <v-flex v-if="!deviceChartLoaded" md9 sm12 class="text-xs-center">
             <!--Loading card-->
             <v-card>
               <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
             </v-card>
           </v-flex>
-          <v-flex xs9 v-if="deviceChartLoaded">
+          <v-flex md9 xs12 v-if="deviceChartLoaded">
             <v-card hover height="300">
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Data Count</span>
               </v-card-title>
-              <bar-chart :height="240" :chart-data="deviceDataCountChartData" :options="deviceDataCountChartData.options"/>
+              <bar-chart width="100%" height="240px" position="relative" :chart-data="deviceDataCountChartData" :options="deviceDataCountChartData.options"/>
             </v-card>
           </v-flex>
         </v-layout>
@@ -59,11 +59,11 @@
         <!--Todo : Make sure userDashboardChartData[deviceChart.user_dashboard_chart_uuid] available before calling it-->
         <v-layout row wrap v-if="userChartLoaded">
           <template v-for="(deviceChart) in userDeviceChart">
-            <v-flex xs6
+            <v-flex md6 xs12
                     :key="deviceChart.user_dashboard_chart_uuid"
             >
               <v-card hover height="380">
-                <line-chart :height="330" :chart-data="userDashboardChartData[deviceChart.user_dashboard_chart_uuid]" :options=userDashboardChartData[deviceChart.user_dashboard_chart_uuid].options />
+                <line-chart width="100%" height="330px" position="relative" :chart-data="userDashboardChartData[deviceChart.user_dashboard_chart_uuid]" :options=userDashboardChartData[deviceChart.user_dashboard_chart_uuid].options />
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-tooltip left>
@@ -190,7 +190,6 @@
     data: () => ({
       // Add new device chart
       // Defaulting to 1 hour
-      userChartLoaded: false,
       deviceChartLoaded: false,
       deviceStatusChartLoaded: false,
       customChartTimeRange: 1,
@@ -247,8 +246,6 @@
           this.$store.dispatch(ADD_DEVICE_DASHBOARD_CHART_REQUEST, newDeviceDashboardData)
             .then((resp) => {
               this.generateSnack(resp.data.success.message, 'success')
-              // Reload user added chart
-              this.userChartLoaded = false
               // Reload the user added chart
               this.loadDeviceDashboardChartData()
             })
@@ -339,8 +336,6 @@
                   // Custom range
                   let currentDate = new Date()
                   let fromDate = new Date()
-                  console.log(currentDate.setHours(currentDate.getHours() - this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour) / 1000)
-                  console.log(currentDate.getTime() / 1000)
                   let requestData = {
                     divider: this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour,
                     fromTime: currentDate.setHours(currentDate.getHours() - this.$store.getters.getuserDeviceDashboardChart.device_dashboard_charts[i].n_last_hour) / 1000,
@@ -361,11 +356,14 @@
                     })
                 }
               }
-              this.userChartLoaded = true
             })
         } catch (error) {
           console.log(error)
         }
+      },
+      countObjectKey: function (object) {
+        // Count object key count
+        return Object.keys(object).length
       },
       loadSensorStatusData: async function () {
         try {
@@ -385,7 +383,6 @@
         // Refresh the user added chart
         this.deviceChartLoaded = false
         this.deviceStatusChartLoaded = false
-        this.userChartLoaded = false
         // Reload the user added chart
         this.userDashboardChartData = {}
         this.loadDeviceDashboardChartData()
@@ -397,6 +394,10 @@
       this.loadDeviceDashboardChartData()
     },
     computed: {
+      userChartLoaded: function () {
+        // To make sure all chart is loaded
+        return this.$store.getters.getuserDeviceDashboardChart.device_dashboard_chart_count === this.countObjectKey(this.userDashboardChartData)
+      },
       addNewChartFormValid: function () {
         return this.selectedChartType && this.selectedDevice && this.customChartTimeRange
       },
@@ -436,7 +437,11 @@
                 // Normal, warning, and disabled respectively
                 data: [this.$store.getters.getSensorStatusData.status_count.normal, this.$store.getters.getSensorStatusData.status_count.warning, this.$store.getters.getSensorStatusData.status_count.disabled]
               }
-            ]
+            ],
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
           }
         }
       }

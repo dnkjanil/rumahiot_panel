@@ -40,11 +40,18 @@ import {
   GET_TIMEZONES_ERROR,
   ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST,
   ADD_NEW_DEVICE_EXPORTED_DATA_SUCCESS,
-  ADD_NEW_DEVICE_EXPORTED_DATA_ERROR
+  ADD_NEW_DEVICE_EXPORTED_DATA_ERROR,
+  GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST,
+  GET_DEVICE_ARDUINO_SOURCE_CODE_SUCCESS,
+  GET_DEVICE_ARDUINO_SOURCE_CODE_ERROR,
+  GET_USER_SENSOR_MAPPING_REQUEST,
+  GET_USER_SENSOR_MAPPING_SUCCESS,
+  GET_USER_SENSOR_MAPPING_ERROR
 
 } from '../actions/gudang'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
+import FileSaver from 'file-saver'
 import axios from 'axios'
 
 const state = {
@@ -75,6 +82,39 @@ const getters = {
 }
 
 const actions = {
+  // Doesnt need a state
+  [GET_USER_SENSOR_MAPPING_REQUEST]: ({commit, dispatch}, deviceUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_USER_SENSOR_MAPPING_REQUEST)
+      const getUserSensorMappingEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/sensor/mapping/' + deviceUUID
+      axios.get(getUserSensorMappingEndpoint)
+        .then(resp => {
+          commit(GET_USER_SENSOR_MAPPING_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_USER_SENSOR_MAPPING_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST]: ({commit, dispatch}, deviceData) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST)
+      const getDeviceArduinoSourceCodeEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/arduino/code/' + deviceData.deviceUUID
+      axios.get(getDeviceArduinoSourceCodeEndpoint, {responseType: 'blob'})
+        .then(resp => {
+          const fileName = 'rumahiot_' + deviceData.deviceName.split(' ').join('_').toLowerCase() + '.ino'
+          FileSaver.saveAs(resp.data, fileName)
+          commit(GET_DEVICE_ARDUINO_SOURCE_CODE_SUCCESS)
+          resolve(resp)
+        })
+        .then(err => {
+          commit(GET_DEVICE_ARDUINO_SOURCE_CODE_ERROR)
+          reject(err)
+        })
+    })
+  },
   [ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST]: ({commit, dispatch}, requestData) => {
     return new Promise((resolve, reject) => {
       commit(ADD_NEW_DEVICE_EXPORTED_DATA_REQUEST)
@@ -657,6 +697,24 @@ const mutations = {
     state.status = 'success'
   },
   [ADD_NEW_DEVICE_EXPORTED_DATA_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_ARDUINO_SOURCE_CODE_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [GET_DEVICE_ARDUINO_SOURCE_CODE_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_USER_SENSOR_MAPPING_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_USER_SENSOR_MAPPING_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [GET_USER_SENSOR_MAPPING_ERROR]: (state) => {
     state.status = 'error'
   }
 }

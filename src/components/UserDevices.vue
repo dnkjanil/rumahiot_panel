@@ -87,7 +87,7 @@
                         <!--Card per sensor-->
                         <v-layout row wrap>
                           <v-flex
-                            xs3
+                            md3 xs6
                             v-for="sensorDetail in props.item.device_sensors"
                             :key="sensorDetail.user_sensor_uuid"
                           >
@@ -309,7 +309,10 @@
                     <v-btn color="primary" class="mb-4">Configure This Device
                       <v-icon small right dark>settings</v-icon>
                     </v-btn>
-                    <v-btn color="teal" class="white--text mb-4">Arduino Project Source
+                    <v-btn @click="onShowUserSensorMapping(props.item.device_uuid)" color="pink" class="white--text mb-4">Sensor Mapping
+                      <v-icon small right dark>fa-thumbtack</v-icon>
+                    </v-btn>
+                    <v-btn @click="getDeviceArduinoSourceCode(props.item)" color="teal" class="white--text mb-4">Arduino Project Source
                       <v-icon small right dark>fa-file-code</v-icon>
                     </v-btn>
                   </v-card>
@@ -544,6 +547,40 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <!--Show sensor pin mapping-->
+      <v-dialog v-model="showUserSensorMappingDialog" max-width="700px">
+        <v-flex v-if="!selectedUserSensorMapping" md9 sm12 class="text-xs-center">
+          <!--Loading card-->
+          <v-card>
+            <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
+          </v-card>
+        </v-flex>
+        <!--Main card-->
+        <v-card v-else>
+          <v-card-title>
+            <span class="headline">Sensor Mapping</span>
+          </v-card-title>
+          <v-card-text>
+            <template v-for="mappingData in selectedUserSensorMapping.sensor_mapping_datas">
+              <h5 class="title mb-0 primary--text">{{mappingData.master_sensor_reference.sensor_model}}</h5>
+              <br/>
+              <v-data-table
+                :headers="sensorMappingHeaders"
+                :items="mappingData.pin_mappings"
+                hide-actions
+                class="elevation-1"
+              >
+                <template slot="items" slot-scope="props">
+                  <td>{{ props.item.sensor_pin }}</td>
+                  <td>{{ props.item.device_pin_name }}</td>
+                  <td>{{ props.item.function }}</td>
+                </template>
+              </v-data-table>
+              <br>
+            </template>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
       <!--Add new device button-->
       <v-tooltip left>
         <!--Add new device button-->
@@ -578,7 +615,7 @@
 <script>
   /* eslint-disable no-undef */
 
-  import {USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST} from '../store/actions/gudang'
+  import {USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
   import {AUTH_SIGNOUT} from '../store/actions/sidik'
 
   export default {
@@ -613,6 +650,26 @@
         cards: [
           {title: 'Pre-fab homes', src: '/static/doc-images/cards/house.jpg'},
           {title: 'Favorite road trips', src: '/static/doc-images/cards/road.jpg'}
+        ],
+        sensorMappingHeaders: [
+          {
+            text: 'Sensor Pin',
+            align: 'left',
+            value: 'device_pin_name',
+            sortable: false
+          },
+          {
+            text: 'Device Pin',
+            align: 'left',
+            value: 'device_pin_name',
+            sortable: false
+          },
+          {
+            text: 'Function',
+            align: 'left',
+            value: 'function',
+            sortable: false
+          }
         ],
         deviceTableLoading: true,
         center: {
@@ -664,10 +721,27 @@
             align: 'left'
           }
         ],
-        userDevices: []
+        userDevices: [],
+        showUserSensorMappingDialog: false,
+        selectedUserSensorMapping: ''
       }
     },
     methods: {
+      onShowUserSensorMapping: async function (deviceUUID) {
+        // Open the dialog
+        this.showUserSensorMappingDialog = true
+        this.$store.dispatch(GET_USER_SENSOR_MAPPING_REQUEST, deviceUUID)
+          .then(resp => {
+            this.selectedUserSensorMapping = resp.data.data
+          })
+      },
+      getDeviceArduinoSourceCode: async function (item) {
+        const deviceData = {
+          deviceUUID: item.device_uuid,
+          deviceName: item.device_name
+        }
+        this.$store.dispatch(GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, deviceData)
+      },
       // Refresh device list
       refreshDeviceList: function () {
         this.loadUserDevice()
