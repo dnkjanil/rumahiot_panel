@@ -1,4 +1,3 @@
-/* eslint-disable promise/param-names */
 import {
   AUTH_REQUEST,
   AUTH_ERROR,
@@ -6,7 +5,7 @@ import {
   AUTH_SIGNOUT,
   CHANGE_PASSWORD_REQUEST,
   CHANGE_PASSWORD_SUCCESS,
-  CHANGE_PASSWORD_ERROR
+  CHANGE_PASSWORD_ERROR, REGISTER_REQUEST, REGISTER_SUCCESS, REGISTER_ERROR
 }
   from '../actions/sidik'
 
@@ -24,14 +23,35 @@ const getters = {
 }
 
 const actions = {
+  [REGISTER_REQUEST]: ({commit, dispatch}, newUserData) => {
+    return new Promise((resolve, reject) => {
+      commit(REGISTER_REQUEST)
+      const emailRegistrationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/email/register'
+      const fd = new FormData()
+      fd.append('full_name', newUserData.fullName)
+      fd.append('email', newUserData.email)
+      fd.append('password', newUserData.password)
+      fd.append('retype_password', newUserData.retypePassword)
+      fd.append('g-recaptcha-response', newUserData.recaptchaResponse)
+      axios.post(emailRegistrationEndpoint, fd)
+        .then(resp => {
+          commit(REGISTER_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(REGISTER_ERROR)
+          reject(err)
+        })
+    })
+  },
   [AUTH_REQUEST]: ({commit, dispatch}, user) => {
     return new Promise((resolve, reject) => {
       commit(AUTH_REQUEST)
-      const emailRegistrationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/email'
+      const emailAuthenticationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/email'
       const fd = new FormData()
       fd.append('email', user.email)
       fd.append('password', user.password)
-      axios.post(emailRegistrationEndpoint, fd)
+      axios.post(emailAuthenticationEndpoint, fd)
         .then(response => {
           const token = response.data.data.token
           // Put the token into local storage when the login is success

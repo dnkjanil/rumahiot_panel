@@ -126,9 +126,10 @@
           <v-icon color="grey">fa-user-circle</v-icon>
         </v-btn>
         <v-card width="200">
-          <v-card-media :src="profileImage" height="200px">
+          <v-card-media :src="computedUserProfileImage" height="200px">
           </v-card-media>
-          <v-subheader class="grey--text text--darken-1">{{computedUserFullName}}<br/>{{email}}</v-subheader>
+          <v-subheader class="primary--text text--darken-1 mt-0">{{computedUserFullName}}</v-subheader>
+          <v-subheader class="grey--text text--darken-1 mt-0">{{computedUserEmail}}</v-subheader>
           <v-list dense>
             <v-list-tile :to="{name:'Profile'}">
               <v-list-tile-action>
@@ -181,16 +182,12 @@
   export default {
     data () {
       return {
-        fullName: '',
-        email: '',
-        profileImage: '',
         mainDrawer: false,
         items: [
           {icon: 'fa-tachometer-alt', text: 'Dashboard', routeName: 'Dashboard'},
           {icon: 'fa-microchip', text: 'My Devices', routeName: 'UserDevices'},
           {icon: 'fa-file-excel', text: 'Device Data', routeName: 'DeviceData'},
-          {icon: 'fa-address-card', text: 'My Profile', routeName: 'Profile'},
-          {icon: 'fa-list-ul', text: 'Account Logs', routeName: 'AccountLogs'}
+          {icon: 'fa-address-card', text: 'My Profile', routeName: 'Profile'}
         ],
         pinnedDocs: [
           {icon: 'fa-book', text: 'Limitations'},
@@ -220,9 +217,29 @@
       this.getDeviceNotificationLog()
     },
     computed: {
-      // The user full name need to be put on computed so it will updated when the profile is changed
-      computedUserFullName: function () {
-        return this.$store.getters.getProfile.full_name
+      computedUserFullName: {
+        get: function () {
+          return this.$store.getters.getProfile.full_name
+        },
+        set: function () {
+          // Do nothing
+        }
+      },
+      computedUserEmail: {
+        get: function () {
+          return this.$store.getters.getProfile.email
+        },
+        set: function () {
+          // Do nothing
+        }
+      },
+      computedUserProfileImage: {
+        get: function () {
+          return this.$store.getters.getProfile.profile_image
+        },
+        set: function () {
+          // Do nothing
+        }
       }
     },
     methods: {
@@ -278,18 +295,6 @@
       getUserProfile: async function () {
         try {
           this.$store.dispatch(USER_PROFILE_REQUEST)
-            .then((resp) => {
-              // Put profil data in the user menu
-              this.fullName = this.$store.getters.getProfile.full_name
-              this.email = this.$store.getters.getProfile.email
-              this.profileImage = this.$store.getters.getProfile.profile_image
-            })
-            .catch(() => {
-              this.$store.dispatch(AUTH_SIGNOUT)
-                .then(() => {
-                  this.$router.push('/signin')
-                })
-            })
         } catch (error) {
           // Display client error
           console.error(error)

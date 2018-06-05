@@ -26,19 +26,18 @@
                 </div>
               </v-card-title>
               <v-container grid-list-xl fluid>
-                <v-layout wrap>
+                <div>
+                  <h5 class="subheading mb-0 primary--text">Current Picture</h5>
+                </div>
+                <v-layout row wrap>
                   <v-flex xs12 sm3>
-                    <v-avatar
-                      tile
-                      :size="190"
-                      class="grey lighten-4"
-                    >
-                      <img :src="computedUserProfileImage" alt="avatar">
-                    </v-avatar>
-                    <v-btn v-on:click="onUpdateProfile" active-class small=""
-                           color="primary">
-                      Change Profile Picture
-                    </v-btn>
+                    <!--Upload Loading-->
+                    <template v-if="changeProfileImageLoading">
+                      <v-progress-linear height="4" :indeterminate="true"></v-progress-linear>
+                    </template>
+                    <img :src="computedUserProfileImage" alt="avatar" width="100%">
+                    <upload-button title="Change Picture" :selectedCallback="onSelectNewProfileImage">
+                    </upload-button>
                   </v-flex>
                   <v-flex xs12 sm6>
                     <!--Update profile-->
@@ -268,11 +267,16 @@
 </template>
 <script>
   import {CHANGE_PASSWORD_REQUEST} from '../store/actions/sidik'
-  import {GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, UPDATE_USER_WIFI_CONNECTION_REQUEST, REMOVE_USER_WIFI_CONNECTION_REQUEST, USER_PROFILE_UPDATE_REQUEST, USER_PROFILE_FULL_NAME_UPDATE, USER_PROFILE_PHONE_NUMBER_UPDATE} from '../store/actions/lemari'
+  import {USER_PROFILE_REQUEST, UPDATE_PROFILE_IMAGE_REQUEST, GET_USER_WIFI_CONNECTION_REQUEST, ADD_USER_WIFI_CONNECTION_REQUEST, UPDATE_USER_WIFI_CONNECTION_REQUEST, REMOVE_USER_WIFI_CONNECTION_REQUEST, USER_PROFILE_UPDATE_REQUEST, USER_PROFILE_FULL_NAME_UPDATE, USER_PROFILE_PHONE_NUMBER_UPDATE} from '../store/actions/lemari'
+  import UploadButton from '@/components/Others/UploadButton'
 
   export default {
+    components: {
+      UploadButton
+    },
     data () {
       return {
+        changeProfileImageLoading: false,
         changePasswordFormValid: false,
         updateProfileFormValid: false,
         addNewWifiConnectionFormValid: false,
@@ -326,6 +330,30 @@
       }
     },
     methods: {
+      reloadUserProfileData: async function () {
+        try {
+          this.$store.dispatch(USER_PROFILE_REQUEST)
+        } catch (e) {
+          console.error(e)
+        }
+      },
+      onSelectNewProfileImage: async function (newImage) {
+        try {
+          this.changeProfileImageLoading = true
+          this.$store.dispatch(UPDATE_PROFILE_IMAGE_REQUEST, newImage)
+            .then(resp => {
+              this.generateSnack(resp.data.success.message, 'success')
+              this.reloadUserProfileData()
+              this.changeProfileImageLoading = false
+            })
+            .catch(err => {
+              this.generateSnack(err.response.data.error.message, 'error')
+              this.changeProfileImageLoading = false
+            })
+        } catch (e) {
+          console.error(e)
+        }
+      },
       onSubmitNewWifiConnection: async function () {
         try {
           this.userWIfiConnectionTableLoading = true

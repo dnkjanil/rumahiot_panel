@@ -40,7 +40,8 @@
               <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in
               </v-btn>
             </v-form>
-
+            <v-btn :to="{'name' : 'Register'}" block class="white--text" large active-class color="teal">Create Account
+            </v-btn>
             <v-snackbar
               :timeout="signinSnackTimeOut"
               :color="signinSnackColor"

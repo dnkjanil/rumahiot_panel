@@ -46,7 +46,10 @@ import {
   GET_DEVICE_ARDUINO_SOURCE_CODE_ERROR,
   GET_USER_SENSOR_MAPPING_REQUEST,
   GET_USER_SENSOR_MAPPING_SUCCESS,
-  GET_USER_SENSOR_MAPPING_ERROR
+  GET_USER_SENSOR_MAPPING_ERROR,
+  REMOVE_USER_DEVICE_REQUEST,
+  REMOVE_USER_DEVICE_SUCCESS,
+  REMOVE_USER_DEVICE_ERROR
 
 } from '../actions/gudang'
 
@@ -82,6 +85,21 @@ const getters = {
 }
 
 const actions = {
+  [REMOVE_USER_DEVICE_REQUEST]: ({commit, dispatch}, deviceUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(REMOVE_USER_DEVICE_REQUEST)
+      const removeUserDeviceEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/device/remove/' + deviceUUID
+      axios.get(removeUserDeviceEndpoint)
+        .then(resp => {
+          commit(REMOVE_USER_DEVICE_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(REMOVE_USER_DEVICE_ERROR)
+          reject(err)
+        })
+    })
+  },
   // Doesnt need a state
   [GET_USER_SENSOR_MAPPING_REQUEST]: ({commit, dispatch}, deviceUUID) => {
     return new Promise((resolve, reject) => {
@@ -715,6 +733,15 @@ const mutations = {
     state.status = 'success'
   },
   [GET_USER_SENSOR_MAPPING_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [REMOVE_USER_DEVICE_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [REMOVE_USER_DEVICE_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [REMOVE_USER_DEVICE_ERROR]: (state) => {
     state.status = 'error'
   }
 }

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import PanelRoot from '@/components/PanelRoot'
 import SignIn from '@/components/SignIn'
+import Register from '@/components/Register'
 import Profile from '@/components/Profile'
 import UserDevices from '@/components/UserDevices'
 import Dashboard from '@/components/Dashboard'
@@ -55,7 +56,7 @@ export default new Router({
           component: DeviceData,
           name: 'DeviceData',
           meta: {
-            title: 'Rumah IoT - Profile',
+            title: 'Rumah IoT - Device Data',
             metaTags: [
               {
                 name: 'description',
@@ -167,6 +168,25 @@ export default new Router({
       component: SignIn,
       meta: {
         title: 'Rumah IoT - Sign In',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'The home page of our example app.'
+          },
+          {
+            property: 'og:description',
+            content: 'The home page of our example app.'
+          }
+        ]
+      },
+      beforeEnter: ifNotAuthenticated
+    },
+    {
+      path: '/register',
+      name: 'Register',
+      component: Register,
+      meta: {
+        title: 'Rumah IoT - Register',
         metaTags: [
           {
             name: 'description',

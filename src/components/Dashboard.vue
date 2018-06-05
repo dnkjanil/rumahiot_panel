@@ -43,7 +43,7 @@
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Data Count</span>
               </v-card-title>
-              <bar-chart width="100%" height="240px" position="relative" :chart-data="deviceDataCountChartData" :options="deviceDataCountChartData.options"/>
+              <horizontal-bar-chart width="100%" height="240px" position="relative" :chart-data="deviceDataCountChartData" :options="deviceDataCountChartData.options"/>
             </v-card>
           </v-flex>
         </v-layout>
@@ -180,13 +180,13 @@
 <script>
   import LineChart from '@/components/charts/LineChart'
   import DoughnutChart from '@/components/charts/DoughnutChart'
-  import BarChart from '@/components/charts/BarChart'
+  import HorizontalBarChart from '@/components/charts/HorizontalBarChart'
   import PieChart from '@/components/charts/PieChart'
   import {GET_DEVICE_CHART_DATA_REQUEST, GET_SENSOR_STATUS_REQUEST, GET_USER_SIMPLE_DEVICE_LIST_REQUEST, GET_DEVICE_MONTHLY_CHART_REQUEST, GET_DEVICE_YEARLY_CHART_REQUEST, GET_DEVICE_CUSTOM_CHART_REQUEST} from '../store/actions/gudang'
   import {GET_DEVICE_DASHBOARD_CHART_REQUEST, ADD_DEVICE_DASHBOARD_CHART_REQUEST, REMOVE_DEVICE_DASHBOARD_CHART_REQUEST} from '../store/actions/lemari'
 
   export default {
-    components: {PieChart, BarChart, LineChart, DoughnutChart},
+    components: {PieChart, HorizontalBarChart, LineChart, DoughnutChart},
     data: () => ({
       // Add new device chart
       // Defaulting to 1 hour
@@ -419,7 +419,7 @@
             scales:
                 {
                   xAxes: [{
-                    display: false
+                    display: true
                   }]
                 },
             responsive: true,

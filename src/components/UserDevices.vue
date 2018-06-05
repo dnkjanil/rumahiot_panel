@@ -315,6 +315,9 @@
                     <v-btn @click="getDeviceArduinoSourceCode(props.item)" color="teal" class="white--text mb-4">Arduino Project Source
                       <v-icon small right dark>fa-file-code</v-icon>
                     </v-btn>
+                    <v-btn @click="onRemoveUserDevice(props.item.device_uuid, props.item.device_name)" color="red" class="white--text mb-4">Remove Device
+                      <v-icon small right dark>fa-trash-alt </v-icon>
+                    </v-btn>
                   </v-card>
                 </template>
               </v-data-table>
@@ -552,7 +555,7 @@
         <v-flex v-if="!selectedUserSensorMapping" md9 sm12 class="text-xs-center">
           <!--Loading card-->
           <v-card>
-            <v-progress-circular :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
+            <v-progress-circular width="500" :size="70" :width="7" indeterminate color="primary"></v-progress-circular>
           </v-card>
         </v-flex>
         <!--Main card-->
@@ -615,7 +618,7 @@
 <script>
   /* eslint-disable no-undef */
 
-  import {USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
+  import {REMOVE_USER_DEVICE_REQUEST, USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
   import {AUTH_SIGNOUT} from '../store/actions/sidik'
 
   export default {
@@ -727,8 +730,23 @@
       }
     },
     methods: {
+      onRemoveUserDevice: async function (deviceUUID, deviceName) {
+        if (confirm('Remove device : ' + deviceName + ' ?')) {
+          this.$store.dispatch(REMOVE_USER_DEVICE_REQUEST, deviceUUID)
+            .then((resp) => {
+              this.generateSnack(resp.data.success.message, 'success')
+              this.loadUserDevice()
+              this.deviceTableLoading = false
+            })
+            .catch((err) => {
+              this.generateSnack(err.response.data.error.message, 'error')
+              this.deviceTableLoading = false
+            })
+        }
+      },
       onShowUserSensorMapping: async function (deviceUUID) {
         // Open the dialog
+        this.selectedUserSensorMapping = ''
         this.showUserSensorMappingDialog = true
         this.$store.dispatch(GET_USER_SENSOR_MAPPING_REQUEST, deviceUUID)
           .then(resp => {

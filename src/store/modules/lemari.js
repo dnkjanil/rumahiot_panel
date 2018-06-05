@@ -30,7 +30,10 @@ import {
   REMOVE_DEVICE_DASHBOARD_CHART_ERROR,
   GET_DEVICE_EXPORTED_XLSX_REQUEST,
   GET_DEVICE_EXPORTED_XLSX_SUCCESS,
-  GET_DEVICE_EXPORTED_XLSX_ERROR
+  GET_DEVICE_EXPORTED_XLSX_ERROR,
+  UPDATE_PROFILE_IMAGE_REQUEST,
+  UPDATE_PROFILE_IMAGE_SUCCESS,
+  UPDATE_PROFILE_IMAGE_ERROR
 
 } from '../actions/lemari'
 import {AUTH_SIGNOUT} from '../actions/sidik'
@@ -57,6 +60,23 @@ const getters = {
 }
 
 const actions = {
+  [UPDATE_PROFILE_IMAGE_REQUEST]: ({commit, dispatch}, newProfileImage) => {
+    return new Promise((resolve, reject) => {
+      commit(UPDATE_PROFILE_IMAGE_REQUEST)
+      const updateProfileImageEndpoint = 'https://lemari.rumahiot.panjatdigital.com/profile/picture/update'
+      const fd = new FormData()
+      fd.append('profile_image', newProfileImage)
+      axios.post(updateProfileImageEndpoint, fd)
+        .then(resp => {
+          commit(UPDATE_PROFILE_IMAGE_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(UPDATE_PROFILE_IMAGE_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_DEVICE_EXPORTED_XLSX_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(GET_DEVICE_EXPORTED_XLSX_REQUEST)
@@ -333,6 +353,15 @@ const mutations = {
     state.deviceExportedXlsxList = deviceExportedXlsxList
   },
   [GET_DEVICE_EXPORTED_XLSX_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [UPDATE_PROFILE_IMAGE_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [UPDATE_PROFILE_IMAGE_SUCCESS]: (state, deviceExportedXlsxList) => {
+    state.status = 'success'
+  },
+  [UPDATE_PROFILE_IMAGE_ERROR]: (state) => {
     state.status = 'error'
   }
 }
