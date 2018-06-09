@@ -49,8 +49,19 @@ import {
   GET_USER_SENSOR_MAPPING_ERROR,
   REMOVE_USER_DEVICE_REQUEST,
   REMOVE_USER_DEVICE_SUCCESS,
-  REMOVE_USER_DEVICE_ERROR
-
+  REMOVE_USER_DEVICE_ERROR,
+  UPDATE_USER_DEVICE_DETAIL_REQUEST,
+  UPDATE_USER_DEVICE_DETAIL_SUCCESS,
+  UPDATE_USER_DEVICE_DETAIL_ERROR,
+  GET_DEVICE_DETAIL_REQUEST,
+  GET_DEVICE_DETAIL_SUCCESS,
+  GET_DEVICE_DETAIL_ERROR,
+  UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL,
+  UPDATE_USER_DEVICE_LOCATION_TEXT,
+  UPDATE_USER_DEVICE_NAME,
+  UPDATE_USER_DEVICE_POSITION,
+  UPDATE_USER_DEVICE_WIFI_CONNECTION,
+  RESET_USER_DEVICE_DATA_DETAIL
 } from '../actions/gudang'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
@@ -61,6 +72,7 @@ const state = {
   'status': '',
   'updateSensorStatus': '',
   'addNewDeviceStatus': '',
+  'updateDeviceDetailStatus': '',
   'userDeviceList': {},
   'supportedBoardList': {},
   'supportedSensorList': {},
@@ -69,7 +81,15 @@ const state = {
   'sensorStatusData': {},
   'userSimpleDeviceList': {},
   'userDashboardChartData': {},
-  'timezoneList': {}
+  'timezoneList': {},
+  'userDeviceDetail': {
+    'deviceUUID': '',
+    'deviceDataSendingInterval': '',
+    'deviceName': '',
+    'locationText': '',
+    'position': '',
+    'deviceWifiConnection': ''
+  }
 }
 
 const getters = {
@@ -81,10 +101,41 @@ const getters = {
   getSensorStatusData: state => state.sensorStatusData,
   getSimpleDeviceList: state => state.userSimpleDeviceList,
   getUserDashboardChartData: state => state.userDashboardChartData,
-  getTimezoneList: state => state.timezoneList
+  getTimezoneList: state => state.timezoneList,
+  getUserDeviceDetail: state => state.userDeviceDetail
 }
 
 const actions = {
+  [UPDATE_USER_DEVICE_DETAIL_REQUEST]: ({commit, dispatch}, newDeviceDetail) => {
+    return new Promise((resolve, reject) => {
+      commit(UPDATE_USER_DEVICE_DETAIL_REQUEST)
+      const updateDeviceDetailEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/device/update'
+      axios.post(updateDeviceDetailEndpoint, newDeviceDetail)
+        .then(resp => {
+          commit(UPDATE_USER_DEVICE_DETAIL_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(UPDATE_USER_DEVICE_DETAIL_SUCCESS)
+          reject(err)
+        })
+    })
+  },
+  [GET_DEVICE_DETAIL_REQUEST]: ({commit, dispatch}, deviceUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DEVICE_DETAIL_REQUEST)
+      const getDeviceDetailEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/device/detail/' + deviceUUID
+      axios.get(getDeviceDetailEndpoint)
+        .then(resp => {
+          commit(GET_DEVICE_DETAIL_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DEVICE_DETAIL_ERROR)
+          reject(err)
+        })
+    })
+  },
   [REMOVE_USER_DEVICE_REQUEST]: ({commit, dispatch}, deviceUUID) => {
     return new Promise((resolve, reject) => {
       commit(REMOVE_USER_DEVICE_REQUEST)
@@ -573,7 +624,6 @@ const actions = {
         })
     })
   }
-
 }
 
 const mutations = {
@@ -743,6 +793,55 @@ const mutations = {
   },
   [REMOVE_USER_DEVICE_ERROR]: (state) => {
     state.status = 'error'
+  },
+  [GET_DEVICE_DETAIL_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DEVICE_DETAIL_SUCCESS]: (state, deviceDetail) => {
+    state.status = 'success'
+    state.userDeviceDetail.deviceUUID = deviceDetail.device_uuid
+    state.userDeviceDetail.deviceDataSendingInterval = deviceDetail.device_data_sending_interval
+    state.userDeviceDetail.deviceName = deviceDetail.device_name
+    state.userDeviceDetail.deviceWifiConnection = deviceDetail.device_wifi_connection
+    state.userDeviceDetail.locationText = deviceDetail.location_text
+    state.userDeviceDetail.position = deviceDetail.position
+  },
+  [GET_DEVICE_DETAIL_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [UPDATE_USER_DEVICE_DETAIL_REQUEST]: (state) => {
+    state.updateDeviceDetailStatus = 'loading'
+  },
+  [UPDATE_USER_DEVICE_DETAIL_SUCCESS]: (state) => {
+    state.updateDeviceDetailStatus = 'success'
+  },
+  [UPDATE_USER_DEVICE_DETAIL_ERROR]: (state) => {
+    state.updateDeviceDetailStatus = 'error'
+  },
+  [UPDATE_USER_DEVICE_WIFI_CONNECTION]: (state, deviceWifiConnection) => {
+    state.userDeviceDetail.deviceWifiConnection = deviceWifiConnection
+  },
+  [UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL]: (state, deviceDataSendingInterval) => {
+    state.userDeviceDetail.deviceDataSendingInterval = deviceDataSendingInterval
+  },
+  [UPDATE_USER_DEVICE_NAME]: (state, deviceName) => {
+    state.userDeviceDetail.deviceName = deviceName
+  },
+  [UPDATE_USER_DEVICE_LOCATION_TEXT]: (state, locationText) => {
+    state.userDeviceDetail.locationText = locationText
+  },
+  [UPDATE_USER_DEVICE_POSITION]: (state, position) => {
+    state.userDeviceDetail.position = position
+  },
+  [RESET_USER_DEVICE_DATA_DETAIL]: (state) => {
+    state.userDeviceDetail = {
+      deviceUUID: '',
+      deviceDataSendingInterval: '',
+      deviceName: '',
+      locationText: '',
+      position: '',
+      deviceWifiConnection: ''
+    }
   }
 }
 

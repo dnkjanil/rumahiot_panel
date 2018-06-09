@@ -306,7 +306,7 @@
                         </v-layout>
                       </v-container>
                     </v-layout>
-                    <v-btn color="primary" class="mb-4">Configure This Device
+                    <v-btn @click="onShowDeviceDetail(props.item.device_uuid)" color="primary" class="mb-4">Configure This Device
                       <v-icon small right dark>settings</v-icon>
                     </v-btn>
                     <v-btn @click="onShowUserSensorMapping(props.item.device_uuid)" color="pink" class="white--text mb-4">Sensor Mapping
@@ -315,7 +315,7 @@
                     <v-btn @click="getDeviceArduinoSourceCode(props.item)" color="teal" class="white--text mb-4">Arduino Project Source
                       <v-icon small right dark>fa-file-code</v-icon>
                     </v-btn>
-                    <v-btn @click="onRemoveUserDevice(props.item.device_uuid, props.item.device_name)" color="red" class="white--text mb-4">Remove Device
+                    <v-btn @click="onRemoveDeviceConfirmationDialog(props.item.device_uuid, props.item.device_name)" color="red" class="white--text mb-4">Remove Device
                       <v-icon small right dark>fa-trash-alt </v-icon>
                     </v-btn>
                   </v-card>
@@ -584,6 +584,109 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+      <!--Remove device confirmation dialog-->
+      <v-dialog v-model="removeDeviceConfirmationDialog" max-width="400px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Remove Confirmation</span>
+          </v-card-title>
+          <v-card-text>
+            <span>Remove device : <strong>{{removedDeviceName}}</strong> </span>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn flat large active-class color="red" @click="removeDeviceConfirmationDialog = false">Cancel</v-btn>
+            <v-btn @click="onRemoveUserDevice(removedDeviceUUID)" large active-class class="white--text" color="red">Remove Device</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <!--Device detail dialog-->
+      <v-dialog persistent v-model="deviceDetailDialog" max-width="900px">
+        <v-card>
+          <!--Update device table tab -->
+          <v-tabs icons-and-text centered dark color="blue">
+            <v-tabs-slider color="yellow"></v-tabs-slider>
+            <v-tab href="#general-update">
+              General
+              <v-icon>fa-wrench</v-icon>
+            </v-tab>
+            <v-tab href="#location-update">
+              Location
+              <v-icon>fa-thumbtack</v-icon>
+            </v-tab>
+            <!--Tab content-->
+            <v-tab-item id="general-update">
+              <v-card-title primary-title>
+                <div>
+                  <h3 class="headline mb-0">Update Device Detail</h3>
+                </div>
+              </v-card-title>
+              <v-card-text>
+                <v-container grid-list-xl fluid>
+                  <!--Device name -->
+                  <v-flex xs12 sm6>
+                    <v-text-field
+                      name="device_name"
+                      label="Device Name"
+                      v-model="updatedDeviceName"
+                      :rules="[() => !!updatedDeviceName || 'Please give your new device a name',() => updatedDeviceName.length <= 32 || 'Device name cannot be longer than 32 character']"
+                      :counter="32"
+                      required
+                      prepend-icon="fa-font"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-layout row wrap>
+                    <v-flex xs12 sm6>
+                      <v-card-text>
+                        <v-layout row wrap>
+                          <v-flex xs9>
+                            <v-slider
+                              :min="5"
+                              :max="1440"
+                              v-model="updatedDeviceDataSendingInterval"
+                              label="Interval"
+                            >
+                            </v-slider>
+                          </v-flex>
+                          <v-flex xs3>
+                            <v-text-field v-model="updatedDeviceDataSendingInterval" type="number"></v-text-field>
+                          </v-flex>
+                        </v-layout>
+                      </v-card-text>
+                    </v-flex>
+                    <v-flex xs12 sm6>
+                      <span> You can <strong>configure how often</strong> your device will send its data (In minutes), data sending interval can be configured <strong>between 5 minutes to 1440 minutes.</strong>i.e. if you pick 5 minute then your device will send its data every 5 minutes.</span>
+                    </v-flex>
+                  </v-layout>
+                  <v-layout row wrap>
+                    <v-flex xs12 sm6>
+                      <v-select
+                        :items="userWifiConnectionList"
+                        v-model="updatedDeviceWifiConnection"
+                        label="Choose your connection profile"
+                        class="input-group--focused"
+                        item-value="user_wifi_connection_uuid"
+                        item-text="connection_name"
+                        prepend-icon="network_wifi"
+                        :loading="userWifiConnectionLoading"
+                        return-object
+                        autocomplete
+                        required
+                      ></v-select>
+                    </v-flex>
+                    <v-flex xs12 sm6>
+                      <span> <strong>Choose WiFi connection</strong> that is going to be <strong>used by your device</strong> to connect to RumahIoT, you can manage your device connection in <strong>My Profile</strong> menu, or you can always press <strong>New WiFi Connection</strong> button above <strong>to add a new wifi connection</strong> for your new device</span>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card-text>
+            </v-tab-item>
+          </v-tabs>
+          <v-card-actions>
+            <v-btn flat large active-class color="blue" @click="resetDeviceDetailData">Cancel</v-btn>
+            <v-btn large active-class class="white--text" color="blue">Update</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <!--Add new device button-->
       <v-tooltip left>
         <!--Add new device button-->
@@ -616,16 +719,19 @@
 </template>
 
 <script>
-  /* eslint-disable no-undef */
-
-  import {REMOVE_USER_DEVICE_REQUEST, USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
+  import {UPDATE_USER_DEVICE_WIFI_CONNECTION, UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL, RESET_USER_DEVICE_DATA_DETAIL, UPDATE_USER_DEVICE_NAME, UPDATE_USER_DEVICE_DETAIL_REQUEST, GET_DEVICE_DETAIL_REQUEST, REMOVE_USER_DEVICE_REQUEST, USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
   import {AUTH_SIGNOUT} from '../store/actions/sidik'
+  import {GET_USER_WIFI_CONNECTION_REQUEST} from '../store/actions/lemari'
 
   export default {
     data () {
       return {
+        removeDeviceConfirmationDialog: false,
+        userWifiConnectionLoading: false,
         myDeviceSpeedDial: false,
         editSensorFormValid: false,
+        removedDeviceName: '',
+        removedDeviceUUID: '',
         deviceListTooltip: {
           warning: 'Latest value goes over threshold',
           normal: 'Latest value is normal',
@@ -726,23 +832,67 @@
         ],
         userDevices: [],
         showUserSensorMappingDialog: false,
-        selectedUserSensorMapping: ''
+        selectedUserSensorMapping: '',
+        deviceDetailDialog: false
       }
     },
     methods: {
-      onRemoveUserDevice: async function (deviceUUID, deviceName) {
-        if (confirm('Remove device : ' + deviceName + ' ?')) {
-          this.$store.dispatch(REMOVE_USER_DEVICE_REQUEST, deviceUUID)
+      loadUserWifiConnectionList: async function () {
+        try {
+          this.userWifiConnectionLoading = true
+          this.$store.dispatch(GET_USER_WIFI_CONNECTION_REQUEST)
             .then((resp) => {
-              this.generateSnack(resp.data.success.message, 'success')
-              this.loadUserDevice()
-              this.deviceTableLoading = false
+              this.userWifiConnectionLoading = false
             })
-            .catch((err) => {
-              this.generateSnack(err.response.data.error.message, 'error')
-              this.deviceTableLoading = false
-            })
+        } catch (e) {
+          // Display client error
+          console.error(e)
         }
+      },
+      onShowDeviceDetail: function (deviceUUID) {
+        this.loadUserWifiConnectionList()
+        this.deviceDetailDialog = true
+        this.getDeviceDetailData(deviceUUID)
+      },
+      resetDeviceDetailData: function () {
+        this.deviceDetailDialog = false
+        this.$store.commit(RESET_USER_DEVICE_DATA_DETAIL)
+      },
+      updateDeviceDetailData: async function (deviceData) {
+        this.$store.dispatch(UPDATE_USER_DEVICE_DETAIL_REQUEST)
+          .then((resp) => {
+            this.generateSnack(resp.data.success.message, 'success')
+            this.loadUserDevice()
+            this.deviceTableLoading = false
+          })
+          .catch((err) => {
+            this.generateSnack(err.response.data.error.message, 'error')
+            this.deviceTableLoading = false
+          })
+      },
+      getDeviceDetailData: async function (deviceUUID) {
+        this.$store.dispatch(GET_DEVICE_DETAIL_REQUEST, deviceUUID)
+          .catch(err => {
+            this.generateSnack(err.response.data.error.message, 'error')
+          })
+      },
+      onRemoveDeviceConfirmationDialog: function (deviceUUID, deviceName) {
+        this.removedDeviceName = deviceName
+        this.removedDeviceUUID = deviceUUID
+        this.removeDeviceConfirmationDialog = true
+      },
+      onRemoveUserDevice: async function (deviceUUID) {
+        this.removeDeviceConfirmationDialog = false
+        this.$store.dispatch(REMOVE_USER_DEVICE_REQUEST, deviceUUID)
+          .then((resp) => {
+            this.generateSnack(resp.data.success.message, 'success')
+            this.loadUserDevice()
+            this.deviceTableLoading = false
+          })
+          .catch((err) => {
+            this.generateSnack(err.response.data.error.message, 'error')
+            this.deviceTableLoading = false
+          })
       },
       onShowUserSensorMapping: async function (deviceUUID) {
         // Open the dialog
@@ -857,6 +1007,40 @@
     },
     beforeMount () {
       this.loadUserDevice()
+    },
+    computed: {
+      updatedDeviceName: {
+        get: function () {
+          return this.$store.getters.getUserDeviceDetail.deviceName
+        },
+        set: function (deviceName) {
+          this.$store.commit(UPDATE_USER_DEVICE_NAME, deviceName)
+        }
+      },
+      updatedDeviceDataSendingInterval: {
+        get: function () {
+          return this.$store.getters.getUserDeviceDetail.deviceDataSendingInterval
+        },
+        set: function (deviceDataSendingInterval) {
+          this.$store.commit(UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL, deviceDataSendingInterval)
+        }
+      },
+      updatedDeviceWifiConnection: {
+        get: function () {
+          return this.$store.getters.getUserDeviceDetail.deviceWifiConnection
+        },
+        set: function (deviceWifiConnection) {
+          this.$store.commit(UPDATE_USER_DEVICE_WIFI_CONNECTION, deviceWifiConnection)
+        }
+      },
+      userWifiConnectionList: {
+        get: function () {
+          return this.$store.getters.getUserWifiConnectionList
+        },
+        set: function () {
+          // Do nothing
+        }
+      }
     }
   }
 </script>

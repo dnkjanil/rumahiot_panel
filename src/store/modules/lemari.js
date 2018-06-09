@@ -43,7 +43,7 @@ const state = {
   'status': '',
   'userProfile': {},
   'updateProfileStatus': '',
-  'userWifiConnectionList': {},
+  'userWifiConnectionList': [],
   'updateWifiConnectionStatus': '',
   'removeWifiConnectionStatus': '',
   'addWifiConnectionStatus': '',

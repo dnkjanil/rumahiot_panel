@@ -564,7 +564,22 @@
                 </v-card>
               </v-dialog>
               <v-btn color="primary" flat @click.native="e1 = 3"  >Previous</v-btn>
-              <v-btn color="primary" @click.native="onAddNewDevice" :disabled="!selectedUserWifiConnection">Add device</v-btn>
+              <v-btn color="primary" @click.native="showAddDeviceConfirmationDialog" :disabled="!selectedUserWifiConnection">Add device</v-btn>
+              <!--Add new device confirmation dialog-->
+              <v-dialog v-model="showAddDeviceConfirmation" max-width="400px">
+                <v-card>
+                  <v-card-title>
+                    <span class="headline">Device Confirmation</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <span>Are you sure to add device <strong>{{deviceName}}</strong> ? , after adding the device <strong>you cannot change the sensor configuration</strong>, but you can still configure other things like naming and notification for each sensor.</span>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn flat large active-class color="teal" @click="showAddDeviceConfirmation = false">Cancel</v-btn>
+                    <v-btn :disabled="!selectedUserWifiConnection" @click="onAddNewDevice" large active-class class="white--text" color="teal">Confirm</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </v-stepper-content>
           </v-stepper-items>
         </v-stepper>
@@ -602,6 +617,7 @@
           added_sensors: [],
           user_wifi_connection_uuid: ''
         },
+        showAddDeviceConfirmation: false,
         // Update sensor
         updateSensorCard: false,
         updateSensorDataTemp: '',
@@ -678,6 +694,9 @@
       }
     },
     methods: {
+      showAddDeviceConfirmationDialog: function () {
+        this.showAddDeviceConfirmation = true
+      },
       generateNewDeviceData: function () {
         // Put required data into newDevice
         this.newDevice.position = this.selectedDeviceLocation.position
@@ -696,6 +715,7 @@
         }
       },
       onAddNewDevice: function () {
+        this.showAddDeviceConfirmation = false
         // Generate the device data
         this.generateNewDeviceData()
         try {

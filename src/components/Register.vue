@@ -76,8 +76,9 @@
 </template>
 
 <script>
-  import axios from 'axios'
   import VueRecaptcha from 'vue-recaptcha'
+  import {REGISTER_REQUEST} from '../store/actions/sidik'
+
   export default {
     data: () => {
       return {
@@ -99,34 +100,34 @@
       }
     },
     methods: {
-      async onSubmit (recaptchaResponse) {
+      onSubmitRegistration: async function (recaptchaResponse) {
         try {
           if (this.$refs.form.validate()) {
-            var methodsScope = this
-            const emailRegistrationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/email/register'
-            const fd = new FormData()
-            fd.append('full_name', this.fullName)
-            fd.append('email', this.email)
-            fd.append('password', this.password)
-            fd.append('retype_password', this.retypePassword)
-            fd.append('g-recaptcha-response', recaptchaResponse)
-            axios.post(emailRegistrationEndpoint, fd)
-              .then(function (response) {
-                methodsScope.generateSnack(response.data.success.message, 'success')
-              }, function (error) {
-                methodsScope.generateSnack(error.response.data.error.message, 'error')
+            const newUser = {
+              fullName: this.fullName,
+              email: this.email,
+              password: this.password,
+              retypePassword: this.retypePassword,
+              recaptchaResponse: recaptchaResponse
+            }
+            this.$store.dispatch(REGISTER_REQUEST, newUser)
+              .then(resp => {
+                this.generateSnack(resp.data.success.message, 'success')
+              })
+              .catch(err => {
+                this.generateSnack(err.response.data.error.message, 'error')
               })
           }
-        } catch (error) {
-          console.error(error)
+        } catch (err) {
+          console.error(err)
         }
       },
       onVerify (response) {
-        this.onSubmit(response)
+        this.onSubmitRegistration(response)
         this.resetRecaptcha()
       },
       onExpired () {
-        console.log('Expired')
+        this.generateSnack('Recaptcha Expired, please refresh the page')
       },
       resetRecaptcha () {
         this.$refs.invisibleRecaptcha.reset() // Direct call reset method

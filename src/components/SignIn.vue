@@ -33,13 +33,11 @@
                 counter
                 required
               ></v-text-field>
-              <div>
-                <a class="body-1">Forgot your password ?</a>
-                <br/>
-              </div>
-              <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in
-              </v-btn>
             </v-form>
+            <v-btn :to="{'name' : 'ForgotPassword'}" flat small active-class color="primary">Forgot Password ?
+            </v-btn>
+            <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in
+            </v-btn>
             <v-btn :to="{'name' : 'Register'}" block class="white--text" large active-class color="teal">Create Account
             </v-btn>
             <v-snackbar
@@ -59,7 +57,7 @@
 </template>
 
 <script>
-  import {AUTH_REQUEST} from '../store/actions/sidik'
+  import {AUTH_REQUEST, ACTIVATE_ACCOUNT_REQUEST} from '../store/actions/sidik'
 
   export default {
     data () {
@@ -77,6 +75,19 @@
       }
     },
     methods: {
+      activateAccount: async function (activationUUID) {
+        try {
+          this.$store.dispatch(ACTIVATE_ACCOUNT_REQUEST, activationUUID)
+            .then(resp => {
+              this.generateSnack(resp.data.success.message, 'success')
+            })
+            .catch(err => {
+              this.generateSnack(err.response.data.error.message, 'error')
+            })
+        } catch (e) {
+          console.error(e)
+        }
+      },
       onSubmit: async function () {
         try {
           if (this.$refs.form.validate()) {
@@ -99,6 +110,14 @@
         this.signinSnackMessage = message
         this.signinSnackColor = color
         this.signinSnack = true
+      }
+    },
+    mounted: function () {
+      if (this.$route.query.activate) {
+        // Only call the activation process if the get parameter exist
+        this.activateAccount(this.$route.query.activate)
+      } else {
+        // Do nothing
       }
     }
   }

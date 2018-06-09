@@ -5,7 +5,19 @@ import {
   AUTH_SIGNOUT,
   CHANGE_PASSWORD_REQUEST,
   CHANGE_PASSWORD_SUCCESS,
-  CHANGE_PASSWORD_ERROR, REGISTER_REQUEST, REGISTER_SUCCESS, REGISTER_ERROR
+  CHANGE_PASSWORD_ERROR,
+  REGISTER_REQUEST,
+  REGISTER_SUCCESS,
+  REGISTER_ERROR,
+  ACTIVATE_ACCOUNT_REQUEST,
+  ACTIVATE_ACCOUNT_SUCCESS,
+  ACTIVATE_ACCOUNT_ERROR,
+  FORGOT_PASSWORD_REQUEST,
+  FORGOT_PASSWORD_SUCCESS,
+  FORGOT_PASSWORD_ERROR,
+  FORGOT_PASSWORD_CONFIRMATION_REQUEST,
+  FORGOT_PASSWORD_CONFIRMATION_SUCCESS,
+  FORGOT_PASSWORD_CONFIRMATION_ERROR
 }
   from '../actions/sidik'
 
@@ -23,6 +35,58 @@ const getters = {
 }
 
 const actions = {
+  [FORGOT_PASSWORD_CONFIRMATION_REQUEST]: ({commit, dispatch}, data) => {
+    return new Promise((resolve, reject) => {
+      commit(FORGOT_PASSWORD_CONFIRMATION_REQUEST)
+      const forgotPasswordConfirmationRequestEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authorize/password/forgot/confirm/'
+      const fd = new FormData()
+      fd.append('new_password', data.newPassword)
+      fd.append('new_password_retype', data.newPasswordRetype)
+      fd.append('forgot_password_uuid', data.forgotPasswordUUID)
+      axios.post(forgotPasswordConfirmationRequestEndpoint, fd)
+        .then(resp => {
+          commit(FORGOT_PASSWORD_CONFIRMATION_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(FORGOT_PASSWORD_CONFIRMATION_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [FORGOT_PASSWORD_REQUEST]: ({commit, dispatch}, data) => {
+    return new Promise((resolve, reject) => {
+      commit(FORGOT_PASSWORD_REQUEST)
+      const forgotPasswordRequestEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authorize/password/forgot'
+      const fd = new FormData()
+      fd.append('email', data.email)
+      fd.append('g-recaptcha-response', data.recaptchaResponse)
+      axios.post(forgotPasswordRequestEndpoint, fd)
+        .then(resp => {
+          commit(FORGOT_PASSWORD_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(FORGOT_PASSWORD_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [ACTIVATE_ACCOUNT_REQUEST]: ({commit, dispatch}, activationUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(ACTIVATE_ACCOUNT_REQUEST)
+      const accountActivationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authorize/email/activate/' + activationUUID
+      axios.get(accountActivationEndpoint)
+        .then(resp => {
+          commit(ACTIVATE_ACCOUNT_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(ACTIVATE_ACCOUNT_ERROR)
+          reject(err)
+        })
+    })
+  },
   [REGISTER_REQUEST]: ({commit, dispatch}, newUserData) => {
     return new Promise((resolve, reject) => {
       commit(REGISTER_REQUEST)
@@ -123,6 +187,42 @@ const mutations = {
   },
   [CHANGE_PASSWORD_ERROR]: (state) => {
     state.changePasswordStatus = 'error'
+  },
+  [REGISTER_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [REGISTER_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [REGISTER_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [ACTIVATE_ACCOUNT_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ACTIVATE_ACCOUNT_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [ACTIVATE_ACCOUNT_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [FORGOT_PASSWORD_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [FORGOT_PASSWORD_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [FORGOT_PASSWORD_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [FORGOT_PASSWORD_CONFIRMATION_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [FORGOT_PASSWORD_CONFIRMATION_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [FORGOT_PASSWORD_CONFIRMATION_ERROR]: (state) => {
+    state.status = 'error'
   }
 }
 

@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import PanelRoot from '@/components/PanelRoot'
 import SignIn from '@/components/SignIn'
 import Register from '@/components/Register'
+import ForgotPassword from '@/components/ForgotPassword'
 import Profile from '@/components/Profile'
 import UserDevices from '@/components/UserDevices'
 import Dashboard from '@/components/Dashboard'
@@ -187,6 +188,25 @@ export default new Router({
       component: Register,
       meta: {
         title: 'Rumah IoT - Register',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'The home page of our example app.'
+          },
+          {
+            property: 'og:description',
+            content: 'The home page of our example app.'
+          }
+        ]
+      },
+      beforeEnter: ifNotAuthenticated
+    },
+    {
+      path: '/forgotpassword',
+      name: 'ForgotPassword',
+      component: ForgotPassword,
+      meta: {
+        title: 'Rumah IoT - Forgot Password',
         metaTags: [
           {
             name: 'description',

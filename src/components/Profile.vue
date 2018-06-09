@@ -179,7 +179,7 @@
                       <v-btn icon class="mx-0" @click="editWifiConnection(props.item)">
                         <v-icon color="blue">edit</v-icon>
                       </v-btn>
-                      <v-btn icon class="mx-0" @click="removeWifiConnection(props.item)">
+                      <v-btn icon class="mx-0" @click="onRemoveWifiConnectionConfirmation(props.item.connection_name, props.item.user_wifi_connection_uuid)">
                         <v-icon color="red">delete</v-icon>
                       </v-btn>
                     </td>
@@ -262,6 +262,21 @@
           <v-btn dark flat @click.native="profileSnack = false">Close</v-btn>
         </v-snackbar>
       </v-card>
+      <!--Remove wifi confirmation dialog-->
+      <v-dialog v-model="removeWifiConfirmationDialog" max-width="400px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Remove Confirmation</span>
+          </v-card-title>
+          <v-card-text>
+            <span>Remove wifi connection : <strong>{{removedWifiName}}</strong> </span>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn flat large active-class color="red" @click="removeWifiConfirmationDialog = false">Cancel</v-btn>
+            <v-btn @click="removeWifiConnection(removedWifiUUID)" large active-class class="white--text" color="red">Remove Connection</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-flex>
   </v-layout>
 </template>
@@ -276,6 +291,9 @@
     },
     data () {
       return {
+        removeWifiConfirmationDialog: false,
+        removedWifiName: '',
+        removedWifiUUID: '',
         changeProfileImageLoading: false,
         changePasswordFormValid: false,
         updateProfileFormValid: false,
@@ -330,6 +348,11 @@
       }
     },
     methods: {
+      onRemoveWifiConnectionConfirmation: function (connectionName, connectionUUID) {
+        this.removedWifiName = connectionName
+        this.removedWifiUUID = connectionUUID
+        this.removeWifiConfirmationDialog = true
+      },
       reloadUserProfileData: async function () {
         try {
           this.$store.dispatch(USER_PROFILE_REQUEST)
@@ -374,21 +397,20 @@
           console.error(error)
         }
       },
-      removeWifiConnection: async function (item) {
+      removeWifiConnection: async function (wifiConnectionUUID) {
+        this.removeWifiConfirmationDialog = false
         try {
-          if (confirm('Remove Connection : ' + item.connection_name + ' ?')) {
-            this.userWIfiConnectionTableLoading = true
-            this.$store.dispatch(REMOVE_USER_WIFI_CONNECTION_REQUEST, item.user_wifi_connection_uuid)
-              .then((resp) => {
-                this.generateSnack(resp.data.success.message, 'success')
-                this.loadUserWifiConnectionList()
-                this.userWIfiConnectionTableLoading = false
-              })
-              .catch((err) => {
-                this.generateSnack(err.response.data.error.message, 'error')
-                this.userWIfiConnectionTableLoading = false
-              })
-          }
+          this.userWIfiConnectionTableLoading = true
+          this.$store.dispatch(REMOVE_USER_WIFI_CONNECTION_REQUEST, wifiConnectionUUID)
+            .then((resp) => {
+              this.generateSnack(resp.data.success.message, 'success')
+              this.loadUserWifiConnectionList()
+              this.userWIfiConnectionTableLoading = false
+            })
+            .catch((err) => {
+              this.generateSnack(err.response.data.error.message, 'error')
+              this.userWIfiConnectionTableLoading = false
+            })
         } catch (error) {
           // Display client error
           console.error(error)
