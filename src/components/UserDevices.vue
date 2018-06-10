@@ -680,10 +680,40 @@
                 </v-container>
               </v-card-text>
             </v-tab-item>
+            <v-tab-item id="location-update">
+              <v-card-text>
+                <!--Gmap Autocomplete-->
+                <v-text-field
+                  label="Pick Location"
+                  class="input-group--focused"
+                  v-model="updatedDeviceLocationtext"
+                  id="searched_address"
+                  required
+                  append-icon="search"
+                >
+                </v-text-field>
+              </v-card-text>
+              <!--Gmap component-->
+              <gmap-map
+                :center="updatedDevicePosition"
+                :zoom="15"
+                style="width: 100%; height: 300px"
+              >
+                <!--Marker Location-->
+                <gmap-marker
+                  :position="updatedDevicePosition"
+                  :clickable="true"
+                  :draggable="true"
+                  ref="updateDeviceMarkerRef"
+                  @click="updatePosition"
+                  @dragend="updatePosition"
+                ></gmap-marker>
+              </gmap-map>
+            </v-tab-item>
           </v-tabs>
           <v-card-actions>
             <v-btn flat large active-class color="blue" @click="resetDeviceDetailData">Cancel</v-btn>
-            <v-btn large active-class class="white--text" color="blue">Update</v-btn>
+            <v-btn large active-class class="white--text" @click="updateDeviceDetailData" color="blue">Update</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -719,13 +749,15 @@
 </template>
 
 <script>
-  import {UPDATE_USER_DEVICE_WIFI_CONNECTION, UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL, RESET_USER_DEVICE_DATA_DETAIL, UPDATE_USER_DEVICE_NAME, UPDATE_USER_DEVICE_DETAIL_REQUEST, GET_DEVICE_DETAIL_REQUEST, REMOVE_USER_DEVICE_REQUEST, USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
+  import {UPDATE_USER_DEVICE_LOCATION_TEXT, UPDATE_USER_DEVICE_POSITION, UPDATE_USER_DEVICE_WIFI_CONNECTION, UPDATE_USER_DEVICE_DATA_SENDING_INTERVAL, UPDATE_USER_DEVICE_NAME, UPDATE_USER_DEVICE_DETAIL_REQUEST, GET_DEVICE_DETAIL_REQUEST, REMOVE_USER_DEVICE_REQUEST, USER_DEVICE_LIST_REQUEST, UPDATE_USER_SENSOR_DETAIL_REQUEST, GET_DEVICE_ARDUINO_SOURCE_CODE_REQUEST, GET_USER_SENSOR_MAPPING_REQUEST} from '../store/actions/gudang'
   import {AUTH_SIGNOUT} from '../store/actions/sidik'
   import {GET_USER_WIFI_CONNECTION_REQUEST} from '../store/actions/lemari'
+  import {loaded} from 'vue2-google-maps'
 
   export default {
     data () {
       return {
+        searchedAddressObject: {},
         removeDeviceConfirmationDialog: false,
         userWifiConnectionLoading: false,
         myDeviceSpeedDial: false,
@@ -837,6 +869,42 @@
       }
     },
     methods: {
+      updatePosition () {
+        let position = {
+          lat: this.$refs.updateDeviceMarkerRef.$markerObject.position.lat(),
+          lng: this.$refs.updateDeviceMarkerRef.$markerObject.position.lng()
+        }
+        this.$store.commit(UPDATE_USER_DEVICE_POSITION, position)
+      },
+      loadAutoComplete () {
+        /* eslint-disable */
+        let methodScope = this
+        loaded.then(() => {
+          let self = this
+          let searchedAddressInput = document.getElementById('searched_address')
+          let searchedAddressAutoComplete = new google.maps.places.Autocomplete(searchedAddressInput)
+          searchedAddressAutoComplete.addListener('place_changed', function () {
+            let place = searchedAddressAutoComplete.getPlace()
+            self.searchedAddressObject = {
+              place
+            }
+            const address = []
+            // Iterate through address_components
+            for (let i = 0; i < place.address_components.length; i++) {
+              address.push(place.address_components[i] && place.address_components[i].short_name || '')
+            }
+            address.join(' ')
+            // Change searchedAddress in the store so it will shows address selected
+            self.$store.commit(UPDATE_USER_DEVICE_LOCATION_TEXT, address.join(', '))
+            // Update location marker from the store
+            let location = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng()
+            }
+            self.$store.commit(UPDATE_USER_DEVICE_POSITION, location)
+          })
+        })
+      },
       loadUserWifiConnectionList: async function () {
         try {
           this.userWifiConnectionLoading = true
@@ -856,10 +924,18 @@
       },
       resetDeviceDetailData: function () {
         this.deviceDetailDialog = false
-        this.$store.commit(RESET_USER_DEVICE_DATA_DETAIL)
       },
       updateDeviceDetailData: async function (deviceData) {
-        this.$store.dispatch(UPDATE_USER_DEVICE_DETAIL_REQUEST)
+        let data = {
+          device_uuid: this.$store.getters.getUserDeviceDetail.deviceUUID,
+          device_name: this.$store.getters.getUserDeviceDetail.deviceName,
+          position: this.$store.getters.getUserDeviceDetail.position,
+          location_text: this.$store.getters.getUserDeviceDetail.locationText,
+          device_data_sending_interval: this.$store.getters.getUserDeviceDetail.deviceDataSendingInterval,
+          user_wifi_connection_uuid: this.$store.getters.getUserDeviceDetail.deviceWifiConnection.user_wifi_connection_uuid
+        }
+        this.deviceDetailDialog = false
+        this.$store.dispatch(UPDATE_USER_DEVICE_DETAIL_REQUEST, data)
           .then((resp) => {
             this.generateSnack(resp.data.success.message, 'success')
             this.loadUserDevice()
@@ -1008,6 +1084,9 @@
     beforeMount () {
       this.loadUserDevice()
     },
+    mounted () {
+      this.loadAutoComplete()
+    },
     computed: {
       updatedDeviceName: {
         get: function () {
@@ -1039,6 +1118,22 @@
         },
         set: function () {
           // Do nothing
+        }
+      },
+      updatedDevicePosition: {
+        get: function () {
+          return this.$store.getters.getUserDeviceDetail.position
+        },
+        set: function (position) {
+          this.$store.commit(UPDATE_USER_DEVICE_POSITION, position)
+        }
+      },
+      updatedDeviceLocationtext: {
+        get: function () {
+          return this.$store.getters.getUserDeviceDetail.locationText
+        },
+        set: function (deviceLocationText) {
+          this.$store.commit(UPDATE_USER_DEVICE_LOCATION_TEXT, deviceLocationText)
         }
       }
     }

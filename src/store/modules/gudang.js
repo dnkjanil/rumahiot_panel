@@ -87,7 +87,10 @@ const state = {
     'deviceDataSendingInterval': '',
     'deviceName': '',
     'locationText': '',
-    'position': '',
+    'position': {
+      lat: 0,
+      lng: 0
+    },
     'deviceWifiConnection': ''
   }
 }
@@ -831,7 +834,8 @@ const mutations = {
     state.userDeviceDetail.locationText = locationText
   },
   [UPDATE_USER_DEVICE_POSITION]: (state, position) => {
-    state.userDeviceDetail.position = position
+    state.userDeviceDetail.position.lat = position.lat
+    state.userDeviceDetail.position.lng = position.lng
   },
   [RESET_USER_DEVICE_DATA_DETAIL]: (state) => {
     state.userDeviceDetail = {
