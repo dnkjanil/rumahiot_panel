@@ -41,14 +41,21 @@
     },
     name: 'App',
     created: function () {
-      // Interceptor for expired or invalid token
+      // Interceptor for expired or invalid token for user account
       axios.interceptors.response.use(undefined, err => {
         let res = err.response
-        if (res.status === 401 && res.config && !res.config.__isRetryRequest) {
+        if (res.status === 401 && res.config && !res.config.__isRetryRequest && res.data.error.code === 1) {
           return new Promise((resolve, reject) => {
             // if you ever get an unauthorized, logout the user
             this.$store.dispatch(AUTH_SIGNOUT)
             this.$router.push('/signin')
+            this.generateSnack(res.data.error.message, 'error')
+          })
+        } else if (res.status === 401 && res.config && !res.config.__isRetryRequest && res.data.error.code === 2) {
+          return new Promise((resolve, reject) => {
+            // if you ever get an unauthorized, logout the user
+            this.$store.dispatch(AUTH_SIGNOUT)
+            this.$router.push('/admin/signin')
             this.generateSnack(res.data.error.message, 'error')
           })
         }

@@ -1,4 +1,5 @@
 import {
+  ADMIN_AUTH_REQUEST,
   AUTH_REQUEST,
   AUTH_ERROR,
   AUTH_SUCCESS,
@@ -108,6 +109,30 @@ const actions = {
         })
     })
   },
+  [ADMIN_AUTH_REQUEST]: ({commit, dispatch}, user) => {
+    return new Promise((resolve, reject) => {
+      commit(ADMIN_AUTH_REQUEST)
+      const adminEmailAuthenticationEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/admin/email'
+      const fd = new FormData()
+      fd.append('email', user.email)
+      fd.append('password', user.password)
+      axios.post(adminEmailAuthenticationEndpoint, fd)
+        .then(response => {
+          const token = response.data.data.token
+          // Put the token into local storage when the login is success
+          localStorage.setItem('rumahiot-token', response.data.data.token)
+          axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+          commit(AUTH_SUCCESS, token)
+          resolve(response)
+        })
+        .catch(err => {
+          commit(AUTH_ERROR)
+          // Remove old token in local storage
+          localStorage.removeItem('rumahiot-token')
+          reject(err)
+        })
+    })
+  },
   [AUTH_REQUEST]: ({commit, dispatch}, user) => {
     return new Promise((resolve, reject) => {
       commit(AUTH_REQUEST)
@@ -165,6 +190,9 @@ const actions = {
 
 const mutations = {
   [AUTH_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ADMIN_AUTH_REQUEST]: (state) => {
     state.status = 'loading'
   },
   [AUTH_SUCCESS]: (state, token) => {

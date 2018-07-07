@@ -46,12 +46,6 @@
           </v-list-tile-action>
           <v-list-tile-title class="grey--text text--darken-1">Browse Documentations</v-list-tile-title>
         </v-list-tile>
-        <v-list-tile @click="">
-          <v-list-tile-action>
-            <v-icon color="grey darken-1">fa-sliders-h</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-title class="grey--text text--darken-1">Settings</v-list-tile-title>
-        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <!--Toolbar-->
@@ -194,13 +188,6 @@
           {icon: 'fa-book', text: 'How do i added my own device'},
           {icon: 'fa-book', text: 'List of supported IoT device'},
           {icon: 'fa-book', text: 'List of supported sensor'}
-        ],
-        notificationDummy: [
-          {message: '"KotaBunga-Stager" exceed threshold limit', time: '12/12/2018, 13:14 UTC'},
-          {message: 'Device "KotaBunga-Stager" exceed threshold limit', time: '12/12/2018, 13:14 UTC'},
-          {message: 'Device "KotaBunga-Stager" exceed threshold limit', time: '12/12/2018, 13:14 UTC'},
-          {message: 'Device "KotaBunga-Stager" exceed threshold limit', time: '12/12/2018, 13:14 UTC'},
-          {message: 'Device "KotaBunga-Stager" exceed threshold limit', time: '12/12/2018, 13:14 UTC'}
         ],
         deviceNotificationLog: {},
         // Notification log snack

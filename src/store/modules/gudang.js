@@ -61,7 +61,13 @@ import {
   UPDATE_USER_DEVICE_NAME,
   UPDATE_USER_DEVICE_POSITION,
   UPDATE_USER_DEVICE_WIFI_CONNECTION,
-  RESET_USER_DEVICE_DATA_DETAIL
+  RESET_USER_DEVICE_DATA_DETAIL,
+  GET_DETAILED_SUPPORTED_BOARD_REQUEST,
+  GET_DETAILED_SUPPORTED_BOARD_SUCCESS,
+  GET_DETAILED_SUPPORTED_BOARD_ERROR,
+  GET_DETAILED_SUPPORTED_SENSOR_REQUEST,
+  GET_DETAILED_SUPPORTED_SENSOR_SUCCESS,
+  GET_DETAILED_SUPPORTED_SENSOR_ERROR
 } from '../actions/gudang'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
@@ -90,9 +96,11 @@ const state = {
     'position': {
       lat: 0,
       lng: 0
-    },
-    'deviceWifiConnection': ''
-  }
+    }
+  },
+  'deviceWifiConnection': '',
+  'detailedSupportedBoard': {},
+  'detailedSupportedSensor': {}
 }
 
 const getters = {
@@ -105,7 +113,9 @@ const getters = {
   getSimpleDeviceList: state => state.userSimpleDeviceList,
   getUserDashboardChartData: state => state.userDashboardChartData,
   getTimezoneList: state => state.timezoneList,
-  getUserDeviceDetail: state => state.userDeviceDetail
+  getUserDeviceDetail: state => state.userDeviceDetail,
+  getDetailedSupportedBoard: state => state.detailedSupportedBoard,
+  getDetailedSupportedSensor: state => state.detailedSupportedSensor
 }
 
 const actions = {
@@ -218,6 +228,36 @@ const actions = {
         })
         .catch(err => {
           commit(GET_TIMEZONES_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DETAILED_SUPPORTED_BOARD_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DETAILED_SUPPORTED_BOARD_REQUEST)
+      const getDetailedSupportedBoardEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/board/supported/detailed/list'
+      axios.get(getDetailedSupportedBoardEndpoint)
+        .then(resp => {
+          commit(GET_DETAILED_SUPPORTED_BOARD_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DETAILED_SUPPORTED_BOARD_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_DETAILED_SUPPORTED_SENSOR_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_DETAILED_SUPPORTED_SENSOR_REQUEST)
+      const getDetailedSupportedSensorEndpoint = 'https://gudang.rumahiot.panjatdigital.com/retrieve/sensor/supported/detailed/list'
+      axios.get(getDetailedSupportedSensorEndpoint)
+        .then(resp => {
+          commit(GET_DETAILED_SUPPORTED_SENSOR_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_DETAILED_SUPPORTED_SENSOR_ERROR)
           reject(err)
         })
     })
@@ -810,6 +850,26 @@ const mutations = {
     state.userDeviceDetail.position = deviceDetail.position
   },
   [GET_DEVICE_DETAIL_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DETAILED_SUPPORTED_BOARD_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DETAILED_SUPPORTED_BOARD_SUCCESS]: (state, detailedSupportedBoard) => {
+    state.status = 'success'
+    state.detailedSupportedBoard = detailedSupportedBoard
+  },
+  [GET_DETAILED_SUPPORTED_BOARD_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_DETAILED_SUPPORTED_SENSOR_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_DETAILED_SUPPORTED_SENSOR_SUCCESS]: (state, detailedSupportedSensor) => {
+    state.status = 'success'
+    state.detailedSupportedSensor = detailedSupportedSensor
+  },
+  [GET_DETAILED_SUPPORTED_SENSOR_ERROR]: (state) => {
     state.status = 'error'
   },
   [UPDATE_USER_DEVICE_DETAIL_REQUEST]: (state) => {

@@ -3,14 +3,14 @@
     <v-layout justify-space-around>
       <v-flex xs12 md3 mt-3>
         <v-card>
-          <v-card-media src="/static/img/other/arduino-1050655_640.jpg" height="100px">
+          <v-card-media src="/static/img/other/13489194223_341aa80f0c_z.jpg" height="100px">
           </v-card-media>
           <v-card-title primary-title>
             <div>
-              <img src="/static/img/logos/banner-toolbar.png" width="100"/>
+              <img src="/static/img/logos/banner-toolbar.png" width="150"/>
               <br/>
-              <h3 class="headline mb-0">Sign in</h3>
-              <div>Using your RumahIoT Credential</div>
+              <h3 class="headline mb-0">Admin Sign in</h3>
+              <div>Using your RumahIoT Admin Credential</div>
             </div>
           </v-card-title>
           <v-container>
@@ -34,11 +34,7 @@
                 required
               ></v-text-field>
             </v-form>
-            <v-btn :to="{'name' : 'ForgotPassword'}" flat small active-class color="primary">Forgot Password ?
-            </v-btn>
             <v-btn v-on:click="onSubmit" block :disabled="!formValid" large active-class color="primary">Sign in
-            </v-btn>
-            <v-btn :to="{'name' : 'Register'}" block class="white--text" large active-class color="teal">Create Account
             </v-btn>
             <v-snackbar
               :timeout="signinSnackTimeOut"
@@ -57,7 +53,7 @@
 </template>
 
 <script>
-  import {AUTH_REQUEST, ACTIVATE_ACCOUNT_REQUEST} from '../store/actions/sidik'
+  import {ADMIN_AUTH_REQUEST} from '../store/actions/sidik'
 
   export default {
     data () {
@@ -75,27 +71,14 @@
       }
     },
     methods: {
-      activateAccount: async function (activationUUID) {
-        try {
-          this.$store.dispatch(ACTIVATE_ACCOUNT_REQUEST, activationUUID)
-            .then(resp => {
-              this.generateSnack(resp.data.success.message, 'success')
-            })
-            .catch(err => {
-              this.generateSnack(err.response.data.error.message, 'error')
-            })
-        } catch (e) {
-          console.error(e)
-        }
-      },
       onSubmit: async function () {
         try {
           if (this.$refs.form.validate()) {
             // When the form is valid
             const {email, password} = this
-            this.$store.dispatch(AUTH_REQUEST, {email, password})
+            this.$store.dispatch(ADMIN_AUTH_REQUEST, {email, password})
               .then(() => {
-                this.$router.push('/dashboard')
+                this.$router.push('/admin/supported/board')
               })
               .catch((err) => {
                 this.generateSnack(err.response.data.error.message, 'error')

@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import PanelRoot from '@/components/PanelRoot'
 import SignIn from '@/components/SignIn'
+import AdminSignIn from '@/components/AdminSignIn'
 import Register from '@/components/Register'
 import ForgotPassword from '@/components/ForgotPassword'
 import Profile from '@/components/Profile'
@@ -11,6 +12,9 @@ import AddUserDevice from '@/components/AddUserDevice'
 import AccountLogs from '@/components/AccountLogs'
 import DeviceData from '@/components/DeviceData'
 import store from '@/store'
+import AdminRoot from '@/components/AdminRoot'
+import DetailedSupportedBoard from '@/components/DetailedSupportedBoard'
+import DetailedSupportedSensor from '@/components/DetailedSupportedSensor'
 
 Vue.use(Router)
 
@@ -219,6 +223,82 @@ export default new Router({
         ]
       },
       beforeEnter: ifNotAuthenticated
+    },
+    {
+      path: '/admin/signin',
+      name: 'AdminSignIn',
+      component: AdminSignIn,
+      meta: {
+        title: 'Rumah IoT - Admin Sign In',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'The home page of our example app.'
+          },
+          {
+            property: 'og:description',
+            content: 'The home page of our example app.'
+          }
+        ]
+      },
+      beforeEnter: ifNotAuthenticated
+    },
+    {
+      path: '/admin',
+      name: 'AdminRoot',
+      component: AdminRoot,
+      meta: {
+        title: 'Rumah IoT',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'The home page of our example app.'
+          },
+          {
+            property: 'og:description',
+            content: 'The home page of our example app.'
+          }
+        ]
+      },
+      children: [
+        {
+          path: '/admin/supported/board',
+          component: DetailedSupportedBoard,
+          name: 'DetailedSupportedBoard',
+          meta: {
+            title: 'Rumah IoT - Supported Board',
+            metaTags: [
+              {
+                name: 'description',
+                content: 'The home page of our example app.'
+              },
+              {
+                property: 'og:description',
+                content: 'The home page of our example app.'
+              }
+            ]
+          }
+        },
+        {
+          path: '/admin/supported/sensor',
+          component: DetailedSupportedSensor,
+          name: 'DetailedSupportedSensor',
+          meta: {
+            title: 'Rumah IoT - Supported Sensor',
+            metaTags: [
+              {
+                name: 'description',
+                content: 'The home page of our example app.'
+              },
+              {
+                property: 'og:description',
+                content: 'The home page of our example app.'
+              }
+            ]
+          }
+        }
+      ],
+      beforeEnter: ifAuthenticated
     }
   ]
 })
