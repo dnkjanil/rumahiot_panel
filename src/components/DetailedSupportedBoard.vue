@@ -34,7 +34,7 @@
             <td>{{ props.item.board_name }}</td>
             <td class="text-xs-left">{{ props.item.chip }}</td>
             <td class="text-xs-left">{{ props.item.manufacturer }}</td>
-            <td class="text-xs-left">{{ props.item.time_added }}</td>
+            <td class="text-xs-left">{{ timeConverter(props.item.time_added) }}</td>
             <td >
               <v-btn icon class="mx-0" @click="onUpdateBoard(props.item)">
                 <v-icon color="blue">edit</v-icon>
@@ -229,6 +229,11 @@
         delete boardDataCopy.time_added
         this.updatedBoard = JSON.stringify(boardDataCopy, null, '\t')
         this.updateSupportedBoardCard = true
+      },
+      timeConverter: function (unixTimeStamp) {
+        // Convert unix time stamp into regular date
+        const date = new Date(unixTimeStamp * 1000)
+        return ('0' + date.getDate()).slice(-2) + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + date.getFullYear()
       },
       removeSupportedBoard: async function (boardUUID) {
         try {
