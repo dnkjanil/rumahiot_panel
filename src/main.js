@@ -9,8 +9,13 @@ import axios from 'axios'
 import CripVueLoading from 'crip-vue-loading'
 import store from '@/store'
 import * as VueGoogleMaps from 'vue2-google-maps'
+import VueHighlightJS from 'vue-highlight.js'
+import 'highlight.js/styles/default.css'
 
 Vue.use(Vuetify)
+
+// Highlight.js
+Vue.use(VueHighlightJS)
 
 // Gmaps
 Vue.use(VueGoogleMaps, {

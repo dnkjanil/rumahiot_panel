@@ -67,7 +67,25 @@ import {
   GET_DETAILED_SUPPORTED_BOARD_ERROR,
   GET_DETAILED_SUPPORTED_SENSOR_REQUEST,
   GET_DETAILED_SUPPORTED_SENSOR_SUCCESS,
-  GET_DETAILED_SUPPORTED_SENSOR_ERROR
+  GET_DETAILED_SUPPORTED_SENSOR_ERROR,
+  REMOVE_DETAILED_SUPPORTED_BOARD_ERROR,
+  REMOVE_DETAILED_SUPPORTED_BOARD_REQUEST,
+  REMOVE_DETAILED_SUPPORTED_BOARD_SUCCESS,
+  REMOVE_DETAILED_SUPPORTED_SENSOR_ERROR,
+  REMOVE_DETAILED_SUPPORTED_SENSOR_REQUEST,
+  REMOVE_DETAILED_SUPPORTED_SENSOR_SUCCESS,
+  ADD_DETAILED_SUPPORTED_BOARD_ERROR,
+  ADD_DETAILED_SUPPORTED_BOARD_REQUEST,
+  ADD_DETAILED_SUPPORTED_BOARD_SUCCESS,
+  ADD_DETAILED_SUPPORTED_SENSOR_ERROR,
+  ADD_DETAILED_SUPPORTED_SENSOR_REQUEST,
+  ADD_DETAILED_SUPPORTED_SENSOR_SUCCESS,
+  UPDATE_DETAILED_SUPPORTED_BOARD_ERROR,
+  UPDATE_DETAILED_SUPPORTED_BOARD_REQUEST,
+  UPDATE_DETAILED_SUPPORTED_BOARD_SUCCESS,
+  UPDATE_DETAILED_SUPPORTED_SENSOR_ERROR,
+  UPDATE_DETAILED_SUPPORTED_SENSOR_REQUEST,
+  UPDATE_DETAILED_SUPPORTED_SENSOR_SUCCESS
 } from '../actions/gudang'
 
 import {AUTH_SIGNOUT} from '../actions/sidik'
@@ -586,6 +604,96 @@ const actions = {
         })
     })
   },
+  [ADD_DETAILED_SUPPORTED_BOARD_REQUEST]: ({commit, dispatch}, newSupportedBoard) => {
+    return new Promise((resolve, reject) => {
+      commit(ADD_DETAILED_SUPPORTED_BOARD_REQUEST)
+      const addNewSupportedBoardEndpoint = 'https://gudang.rumahiot.panjatdigital.com/store/board/supported/new'
+      axios.post(addNewSupportedBoardEndpoint, newSupportedBoard)
+        .then(resp => {
+          commit(ADD_DETAILED_SUPPORTED_BOARD_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(ADD_DETAILED_SUPPORTED_BOARD_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [ADD_DETAILED_SUPPORTED_SENSOR_REQUEST]: ({commit, dispatch}, newSupportedSensor) => {
+    return new Promise((resolve, reject) => {
+      commit(ADD_DETAILED_SUPPORTED_SENSOR_REQUEST)
+      const addNewSupportedSensorEndpoint = 'https://gudang.rumahiot.panjatdigital.com/store/sensor/supported/new'
+      axios.post(addNewSupportedSensorEndpoint, newSupportedSensor)
+        .then(resp => {
+          commit(ADD_DETAILED_SUPPORTED_SENSOR_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(ADD_DETAILED_SUPPORTED_SENSOR_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [UPDATE_DETAILED_SUPPORTED_BOARD_REQUEST]: ({commit, dispatch}, updatedSupportedBoard) => {
+    return new Promise((resolve, reject) => {
+      commit(UPDATE_DETAILED_SUPPORTED_BOARD_REQUEST)
+      const updateSupportedBoardEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/board/supported/update'
+      axios.post(updateSupportedBoardEndpoint, updatedSupportedBoard)
+        .then(resp => {
+          commit(UPDATE_DETAILED_SUPPORTED_BOARD_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(UPDATE_DETAILED_SUPPORTED_BOARD_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [UPDATE_DETAILED_SUPPORTED_SENSOR_REQUEST]: ({commit, dispatch}, updatedSupportedSensor) => {
+    return new Promise((resolve, reject) => {
+      commit(UPDATE_DETAILED_SUPPORTED_SENSOR_REQUEST)
+      const updateSupportedSensorEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/sensor/supported/update'
+      axios.post(updateSupportedSensorEndpoint, updatedSupportedSensor)
+        .then(resp => {
+          commit(UPDATE_DETAILED_SUPPORTED_SENSOR_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(UPDATE_DETAILED_SUPPORTED_SENSOR_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [REMOVE_DETAILED_SUPPORTED_BOARD_REQUEST]: ({commit, dispatch}, boardUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(REMOVE_DETAILED_SUPPORTED_BOARD_REQUEST)
+      const removeSupportedBoardEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/board/supported/remove/' + boardUUID
+      axios.get(removeSupportedBoardEndpoint)
+        .then(resp => {
+          commit(REMOVE_DETAILED_SUPPORTED_BOARD_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(REMOVE_DETAILED_SUPPORTED_BOARD_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [REMOVE_DETAILED_SUPPORTED_SENSOR_REQUEST]: ({commit, dispatch}, masterSensorReferenceUUID) => {
+    return new Promise((resolve, reject) => {
+      commit(REMOVE_DETAILED_SUPPORTED_SENSOR_REQUEST)
+      const removeSupportedSensorEndpoint = 'https://gudang.rumahiot.panjatdigital.com/configure/sensor/supported/remove/' + masterSensorReferenceUUID
+      axios.get(removeSupportedSensorEndpoint)
+        .then(resp => {
+          commit(REMOVE_DETAILED_SUPPORTED_SENSOR_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(REMOVE_DETAILED_SUPPORTED_SENSOR_ERROR)
+          reject(err)
+        })
+    })
+  },
   [GET_SUPPORTED_BOARD_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(GET_SUPPORTED_SENSOR_REQUEST)
@@ -906,6 +1014,60 @@ const mutations = {
       position: '',
       deviceWifiConnection: ''
     }
+  },
+  [REMOVE_DETAILED_SUPPORTED_BOARD_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [REMOVE_DETAILED_SUPPORTED_BOARD_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [REMOVE_DETAILED_SUPPORTED_BOARD_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [REMOVE_DETAILED_SUPPORTED_SENSOR_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [REMOVE_DETAILED_SUPPORTED_SENSOR_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [REMOVE_DETAILED_SUPPORTED_SENSOR_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [ADD_DETAILED_SUPPORTED_BOARD_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ADD_DETAILED_SUPPORTED_BOARD_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [ADD_DETAILED_SUPPORTED_BOARD_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [ADD_DETAILED_SUPPORTED_SENSOR_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [ADD_DETAILED_SUPPORTED_SENSOR_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [ADD_DETAILED_SUPPORTED_SENSOR_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [UPDATE_DETAILED_SUPPORTED_BOARD_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [UPDATE_DETAILED_SUPPORTED_BOARD_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [UPDATE_DETAILED_SUPPORTED_BOARD_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [UPDATE_DETAILED_SUPPORTED_SENSOR_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [UPDATE_DETAILED_SUPPORTED_SENSOR_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [UPDATE_DETAILED_SUPPORTED_SENSOR_ERROR]: (state) => {
+    state.status = 'error'
   }
 }
 
