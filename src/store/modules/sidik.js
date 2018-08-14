@@ -18,7 +18,13 @@ import {
   FORGOT_PASSWORD_ERROR,
   FORGOT_PASSWORD_CONFIRMATION_REQUEST,
   FORGOT_PASSWORD_CONFIRMATION_SUCCESS,
-  FORGOT_PASSWORD_CONFIRMATION_ERROR
+  FORGOT_PASSWORD_CONFIRMATION_ERROR,
+  GET_USER_LIST_REQUEST,
+  GET_USER_LIST_SUCCESS,
+  GET_USER_LIST_ERROR,
+  UPDATE_USER_DETAIL_REQUEST,
+  UPDATE_USER_DETAIL_SUCCESS,
+  UPDATE_USER_DETAIL_ERROR
 }
   from '../actions/sidik'
 
@@ -27,15 +33,51 @@ import axios from 'axios'
 const state = {
   token: localStorage.getItem('rumahiot-token') || '',
   changePasswordStatus: '',
-  status: ''
+  status: '',
+  userList: {}
 }
 
 const getters = {
   isAuthenticated: state => !!state.token,
-  authStatus: state => state.status
+  authStatus: state => state.status,
+  getUserList: state => state.userList
 }
 
 const actions = {
+  [UPDATE_USER_DETAIL_REQUEST]: ({commit, dispatch}, userDetail) => {
+    return new Promise((resolve, reject) => {
+      commit(UPDATE_USER_DETAIL_REQUEST)
+      const updateUserDetailEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/user/update'
+      const fd = new FormData()
+      fd.append('user_uuid', userDetail.user_uuid)
+      fd.append('activated', userDetail.activated)
+      fd.append('admin', userDetail.admin)
+      axios.post(updateUserDetailEndpoint, fd)
+        .then(resp => {
+          commit(UPDATE_USER_DETAIL_SUCCESS)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(UPDATE_USER_DETAIL_ERROR)
+          reject(err)
+        })
+    })
+  },
+  [GET_USER_LIST_REQUEST]: ({commit, dispatch}) => {
+    return new Promise((resolve, reject) => {
+      commit(GET_USER_LIST_REQUEST)
+      const getUserListEndpoint = 'https://sidik.rumahiot.panjatdigital.com/authenticate/user/list'
+      axios.get(getUserListEndpoint)
+        .then(resp => {
+          commit(GET_USER_LIST_SUCCESS, resp.data.data)
+          resolve(resp)
+        })
+        .catch(err => {
+          commit(GET_USER_LIST_ERROR)
+          reject(err)
+        })
+    })
+  },
   [FORGOT_PASSWORD_CONFIRMATION_REQUEST]: ({commit, dispatch}, data) => {
     return new Promise((resolve, reject) => {
       commit(FORGOT_PASSWORD_CONFIRMATION_REQUEST)
@@ -64,7 +106,7 @@ const actions = {
       fd.append('g-recaptcha-response', data.recaptchaResponse)
       axios.post(forgotPasswordRequestEndpoint, fd)
         .then(resp => {
-          commit(FORGOT_PASSWORD_SUCCESS)
+          commit(FORGOT_PASSWORD_SUCCESS, resp.data.data)
           resolve(resp)
         })
         .catch(err => {
@@ -250,6 +292,25 @@ const mutations = {
     state.status = 'success'
   },
   [FORGOT_PASSWORD_CONFIRMATION_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [GET_USER_LIST_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [GET_USER_LIST_SUCCESS]: (state, userList) => {
+    state.userList = userList
+    state.status = 'success'
+  },
+  [GET_USER_LIST_ERROR]: (state) => {
+    state.status = 'error'
+  },
+  [UPDATE_USER_DETAIL_REQUEST]: (state) => {
+    state.status = 'loading'
+  },
+  [UPDATE_USER_DETAIL_SUCCESS]: (state) => {
+    state.status = 'success'
+  },
+  [UPDATE_USER_DETAIL_ERROR]: (state) => {
     state.status = 'error'
   }
 }

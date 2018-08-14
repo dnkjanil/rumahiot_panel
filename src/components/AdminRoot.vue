@@ -79,6 +79,7 @@
       return {
         mainDrawer: false,
         items: [
+          {icon: 'fa-users', text: 'Registered User', routeName: 'UserList'},
           {icon: 'fa-microchip', text: 'Supported Board', routeName: 'DetailedSupportedBoard'},
           {icon: 'fa-assistive-listening-systems', text: 'Supported Sensor', routeName: 'DetailedSupportedSensor'}
         ]

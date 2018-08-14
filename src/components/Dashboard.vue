@@ -28,7 +28,7 @@
               <v-card-title>
                 <span class="title mb-0 primary--text">Device Sensor Status</span>
               </v-card-title>
-              <pie-chart width="100%" height="240px" position="relative" :chart-data="sensorStatusChartData" :options="sensorStatusChartData.options"/>
+              <pie-chart width="100%" height="220px" position="relative" :chart-data="sensorStatusChartData" :options="sensorStatusChartData.options"/>
             </v-card>
           </v-flex>
           <!--Device total data-->

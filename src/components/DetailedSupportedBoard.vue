@@ -59,15 +59,13 @@
             <v-layout wrap>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">JSON Reference For new supported board</span>
-                <v-textarea
+                <v-text-field
                   :loading="newSupportedBoardLoading"
-                  box
+                  textarea
                   label="New supported board data in JSON format"
                   auto-grow
                   v-model="newSupportedBoard"
-                  clearable
-                  append-icon="fa-file-code"
-                ></v-textarea>
+                ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">Syntax Highlighted JSON</span>
@@ -92,15 +90,14 @@
             <v-layout wrap>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">JSON Reference For updated board</span>
-                <v-textarea
+                <v-text-field
                   :loading="updateSupportedBoardLoading"
-                  box
                   label="Update supported board data in JSON format"
                   auto-grow
                   v-model="updatedBoard"
                   clearable
-                  append-icon="fa-file-code"
-                ></v-textarea>
+                  textarea
+                ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">Syntax Highlighted JSON</span>

@@ -57,15 +57,14 @@
             <v-layout wrap>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">JSON Reference For new supported sensor</span>
-                <v-textarea
-                  :loading="newSupportedSensorLoading"
-                  box
-                  label="New supported sensor data in JSON format"
-                  auto-grow
-                  v-model="newSupportedSensor"
-                  clearable
-                  append-icon="fa-file-code"
-                ></v-textarea>
+              <v-text-field
+                :loading="newSupportedSensorLoading"
+                textarea
+                label="New supported sensor data in JSON format"
+                auto-grow
+                v-model="newSupportedSensor"
+                clearable
+              ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">Syntax Highlighted JSON</span>
@@ -90,15 +89,14 @@
             <v-layout wrap>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">JSON Reference For updated sensor</span>
-                <v-textarea
+                <v-text-field
                   :loading="updateSupportedSensorLoading"
-                  box
+                  textarea
                   label="Update supported sensor data in JSON format"
                   auto-grow
                   v-model="updatedSensor"
                   clearable
-                  append-icon="fa-file-code"
-                ></v-textarea>
+                ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6>
                 <span class="subheading primary--text">Syntax Highlighted JSON</span>

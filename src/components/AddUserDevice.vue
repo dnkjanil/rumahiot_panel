@@ -64,6 +64,7 @@
                                 <h3 class="body-2 mb-0">
                                   <!--<v-icon color="primary" right>fa-microchip</v-icon>-->
                                   Manufacturer : {{selectedBoard.manufacturer}}
+                                  <br>
                                   <a :href="selectedBoard.board_specification" target="_blank">Detailed Specifications</a>
                                   <br>
                                   <a :href="selectedBoard.board_image_source" target="_blank">Picture Source </a>

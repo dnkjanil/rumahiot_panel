@@ -12,6 +12,7 @@ import * as VueGoogleMaps from 'vue2-google-maps'
 import VueHighlightJS from 'vue-highlight.js'
 import 'highlight.js/styles/default.css'
 
+// Vuetify
 Vue.use(Vuetify)
 
 // Highlight.js

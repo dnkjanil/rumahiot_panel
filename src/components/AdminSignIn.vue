@@ -78,7 +78,7 @@
             const {email, password} = this
             this.$store.dispatch(ADMIN_AUTH_REQUEST, {email, password})
               .then(() => {
-                this.$router.push('/admin/supported/board')
+                this.$router.push('/admin/user/list')
               })
               .catch((err) => {
                 this.generateSnack(err.response.data.error.message, 'error')

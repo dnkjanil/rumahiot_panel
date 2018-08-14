@@ -15,6 +15,7 @@ import store from '@/store'
 import AdminRoot from '@/components/AdminRoot'
 import DetailedSupportedBoard from '@/components/DetailedSupportedBoard'
 import DetailedSupportedSensor from '@/components/DetailedSupportedSensor'
+import UserList from '@/components/UserList'
 
 Vue.use(Router)
 
@@ -285,6 +286,24 @@ export default new Router({
           name: 'DetailedSupportedSensor',
           meta: {
             title: 'Rumah IoT - Supported Sensor',
+            metaTags: [
+              {
+                name: 'description',
+                content: 'The home page of our example app.'
+              },
+              {
+                property: 'og:description',
+                content: 'The home page of our example app.'
+              }
+            ]
+          }
+        },
+        {
+          path: '/admin/user/list',
+          component: UserList,
+          name: 'UserList',
+          meta: {
+            title: 'Rumah IoT - Registered User',
             metaTags: [
               {
                 name: 'description',
